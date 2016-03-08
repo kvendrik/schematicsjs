@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test</title>
+</head>
+<body>
+
+<script src="../dist/schematics.js"></script>
+<script>
+var endpoints = {
+    user: {
+        get: {
+            href: "https://api.github.com/user/:id/:name",
+            templated: true 
+        }
+    },
+    articles: {
+        get: {
+            href: "https://api.github.com/articles"
+        }
+    },
+    article: {
+        post: {
+            href: "https://api.github.com/article",
+            params: {
+                name: "String",
+                date: "Date",
+                country: {
+                    state: "String",
+                    name: { type: "String", optional: true }
+                }
+            }
+        },
+        get: {
+            href: "https://api.github.com/article/:id",
+            templated: true
+        }
+    }
+};
+
+const api = new Schematics(endpoints);
+
+api.user.get({ id: 2, name: "matti" }, function(err, res){
+  console.log('ohhjaaa');
+});
+
+api.article.post({
+  name: 'How to be Awesome by Matti',
+  date: new Date(),
+  country: {
+    state: 'NY'
+  }
+}, function(err, res){
+  console.log('ohhjaaa');
+});
+</script>
+
+</body>
+</html>
