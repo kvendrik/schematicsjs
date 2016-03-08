@@ -1,0 +1,31 @@
+{
+    "user": {
+        "get": {
+            "href": "https://api.github.com/user/:id/:name"
+        }
+    },
+    "articles": {
+        "get": {
+            "href": "https://api.github.com/articles"
+        }
+    },
+    "article": {
+        "post": {
+            "href": "https://api.github.com/article",
+            "params": {
+                "name": "String",
+                "date": "Date",
+                "country": {
+                    "state": "String",
+                    "name": {
+                        "type": "String",
+                        "optional": true
+                    }
+                }
+            }
+        },
+        "get": {
+            "href": "https://api.github.com/article/:id"
+        }
+    }
+}

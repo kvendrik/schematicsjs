@@ -1,10 +1,38 @@
-const fs = require('fs'),
-	  browserify = require('browserify'),
-	  gulp = require('gulp');
- 
-gulp.task('default', () => {
-	browserify('src/index.js')
-	  .transform('babelify', {presets: ["es2015", "react"]})
-	  .bundle()
-	  .pipe(fs.createWriteStream('dist/schematics.js'));
+const browserify = require('browserify'),
+	  gulp = require('gulp'),
+      connect = require('gulp-connect'),
+      rename = require('gulp-rename'),
+      uglify = require('gulp-uglify'),
+      source = require('vinyl-source-stream'),
+      buffer = require('vinyl-buffer');
+
+gulp.task('serve-test', () => {
+    connect.server({
+        livereload: true,
+        host: '0.0.0.0',
+        port: 9000,
+        root: './test'
+    });
 });
+
+gulp.task('watch', () => {
+    gulp.watch('src/**/*.js', ['browserify']);
+});
+
+gulp.task('browserify', () => {
+	browserify('src/index.js')
+	  .transform('babelify', { presets: ["es2015"] })
+	  .bundle()
+      .pipe(source('schematics.js'))
+      .pipe(buffer())
+	  .pipe(gulp.dest('dist'))
+      .pipe(gulp.dest('test'))
+
+      .pipe(uglify())
+      .pipe(rename('schematics.min.js'))
+      .pipe(gulp.dest('dist'))
+
+      .pipe(connect.reload());
+});
+
+gulp.task('default', ['serve-test', 'watch']);

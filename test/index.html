@@ -6,54 +6,32 @@
 </head>
 <body>
 
-<script src="../dist/schematics.js"></script>
+<script src="schematics.js"></script>
 <script>
-var endpoints = {
-    user: {
-        get: {
-            href: "https://api.github.com/user/:id/:name",
-            templated: true 
-        }
-    },
-    articles: {
-        get: {
-            href: "https://api.github.com/articles"
-        }
-    },
-    article: {
-        post: {
-            href: "https://api.github.com/article",
-            params: {
-                name: "String",
-                date: "Date",
-                country: {
-                    state: "String",
-                    name: { type: "String", optional: true }
-                }
-            }
-        },
-        get: {
-            href: "https://api.github.com/article/:id",
-            templated: true
-        }
-    }
-};
-
-const api = new Schematics(endpoints);
-
-api.user.get({ id: 2, name: "matti" }, function(err, res){
-  console.log('ohhjaaa');
+new Schematics('http://localhost:9000/schema.json')
+.then(function(api){
+    api.articles.get({ id: 2, name: "matti" })
+    .then(function(){
+        console.log('okay');
+    }).catch(function(){
+        console.log(arguments);
+    });
 });
 
-api.article.post({
-  name: 'How to be Awesome by Matti',
-  date: new Date(),
-  country: {
-    state: 'NY'
-  }
-}, function(err, res){
-  console.log('ohhjaaa');
-});
+// api.articles.get({ id: 2, name: "matti" })
+// .then(function(){
+//     console.log('okay');
+// }).catch(function(){
+//     console.log('err');
+// });
+
+// api.article.post({
+//     name: 'How to be Awesome by Matti',
+//     date: new Date(),
+//     country: {
+//         state: 'NY'
+//     }
+// });
 </script>
 
 </body>
