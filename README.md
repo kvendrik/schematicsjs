@@ -36,6 +36,10 @@ new Schematics('https://api.example.com')
     api.articles.get()
     .then((data) => console.log(data))
     .catch((err) => console.log(err));
+    
+    api.article.post({ date: new Date() })
+    .then((res) => console.log(res))
+    .catch((err) => console.log(err));
 
 });
 ```
