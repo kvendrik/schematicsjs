@@ -1,6 +1,6 @@
 Schematics.js
 =============
-#### A cool API communication experiment
+#### An API communication experiment
 
 ### What is it?
 The idea behind Schematics is to keep everything API in the API and provide the front-end with all the information it needs to know what the API wants. This in oppose to traditional ways in which there is basically initially no real communication between server and client on what the client can expect.
@@ -27,7 +27,7 @@ The first step is creating a schema which lays out what endpoints your API has a
 ```
 
 #### #2 Library
-The next step is of course stating to use the library. Its quite simple: give it the URL to your schema and start hacking.
+Perfect! Now give the library the URL to your schema and start hacking. :)
 ```javascript
 new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json')
 .then(function(api){
@@ -43,4 +43,4 @@ new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json')
 });
 ```
 
-
+![](http://i.giphy.com/TlQHWni5OwcCs.gif)
