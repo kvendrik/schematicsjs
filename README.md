@@ -1,6 +1,6 @@
 Schematics.js
 =============
-#### A cool API communication experiment
+#### An API communication experiment
 
 ### What is it?
 The idea behind Schematics is to keep everything API in the API and provide the front-end with all the information it needs to know what the API wants. This in oppose to traditional ways in which there is basically initially no real communication between server and client on what the client can expect.
