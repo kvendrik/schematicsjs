@@ -78,6 +78,10 @@ var SchemaParser = function () {
             };
 
             checkSchemaObject(schema, params);
+
+            callback({
+                valid: true
+            });
         }
     }]);
 
@@ -130,32 +134,43 @@ var Schematics = function () {
             },
 
             post: function post(params, _obj) {
-                //get endpoint details
-                var details = _obj._post;
-                var schemaParser = new _SchemaParser2.default(details.params);
-
-                return new Promise(function (resolve, reject) {
-                    schemaParser.checkParamsValid(params, function (result) {
-                        if (!result.valid) {
-                            throw new Error(result.message);
-                        }
-
-                        (0, _ajax2.default)({
-                            method: 'POST',
-                            url: endpointUrl,
-                            dataType: 'json'
-                        }).then(resolve).catch(reject);
-                    });
-                });
+                return _this._doRequestWithParams('post', params, _obj);
+            },
+            put: function put(params, _obj) {
+                return _this._doRequestWithParams('put', params, _obj);
+            },
+            delete: function _delete(params, _obj) {
+                return _this._doRequestWithParams('delete', params, _obj);
             }
         };
 
         return new Promise(function (resolve, reject) {
-            _this._getSchema(schemaUrl, resolve, reject);
+            return _this._getSchema(schemaUrl, resolve, reject);
         });
     }
 
     _createClass(Schematics, [{
+        key: '_doRequestWithParams',
+        value: function _doRequestWithParams(reqName, params, _obj) {
+            //get endpoint details
+            var details = _obj['_' + reqName],
+                schemaParser = new _SchemaParser2.default(details.params);
+
+            return new Promise(function (resolve, reject) {
+                schemaParser.checkParamsValid(params, function (result) {
+                    if (!result.valid) {
+                        throw new Error(result.message);
+                    }
+
+                    (0, _ajax2.default)({
+                        type: reqName,
+                        url: details.href,
+                        dataType: 'json'
+                    }).then(resolve).catch(reject);
+                });
+            });
+        }
+    }, {
         key: '_getSchema',
         value: function _getSchema(schemaUrl, resolve, reject) {
             var _this2 = this;

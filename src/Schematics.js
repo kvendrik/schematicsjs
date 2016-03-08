@@ -19,31 +19,33 @@ class Schematics {
                 });
             },
 
-            post: function(params, _obj){
-                //get endpoint details
-                let details = _obj._post;
-                let schemaParser = new SchemaParser(details.params);
-
-                return new Promise(function(resolve, reject){
-                    schemaParser.checkParamsValid(params, function(result){
-                        if(!result.valid){
-                            throw new Error(result.message);
-                        }
-
-                        ajax({
-                            method: 'POST',
-                            url: endpointUrl,
-                            dataType: 'json'
-                        })
-                        .then(resolve)
-                        .catch(reject);
-                    });
-                });
-            }
+            post: (params, _obj) => this._doRequestWithParams('post', params, _obj),
+            put: (params, _obj) => this._doRequestWithParams('put', params, _obj),
+            delete: (params, _obj) => this._doRequestWithParams('delete', params, _obj)
         };
 
-        return new Promise((resolve, reject) => {
-            this._getSchema(schemaUrl, resolve, reject);
+        return new Promise((resolve, reject) => this._getSchema(schemaUrl, resolve, reject));
+    }
+
+    _doRequestWithParams(reqName, params, _obj){
+        //get endpoint details
+        let details = _obj['_'+reqName],
+            schemaParser = new SchemaParser(details.params);
+
+        return new Promise(function(resolve, reject){
+            schemaParser.checkParamsValid(params, function(result){
+                if(!result.valid){
+                    throw new Error(result.message);
+                }
+
+                ajax({
+                    type: reqName,
+                    url: details.href,
+                    dataType: 'json'
+                })
+                .then(resolve)
+                .catch(reject);
+            });
         });
     }
 

@@ -62,6 +62,10 @@ class SchemaParser {
         };
     
         checkSchemaObject(schema, params);
+        
+        callback({
+            valid: true
+        });
     }
 }
 
