@@ -1,31 +1,14 @@
 {
-    "user": {
-        "get": {
-            "href": "https://api.github.com/user/:id/:name"
-        }
-    },
-    "articles": {
-        "get": {
-            "href": "https://api.github.com/articles"
-        }
-    },
-    "article": {
+    "users": "https://api.github.com/users/:username",
+    "emojis": "https://api.github.com/emojis",
+    "events": {
         "post": {
-            "href": "https://api.github.com/article",
+            "href": "https://api.github.com/events",
             "params": {
                 "name": "String",
-                "date": "Date",
-                "country": {
-                    "state": "String",
-                    "name": {
-                        "type": "String",
-                        "optional": true
-                    }
-                }
+                "date": { "type": "String", "optional": true }
             }
         },
-        "get": {
-            "href": "https://api.github.com/article/:id"
-        }
+        "get": "https://api.github.com/events"
     }
 }

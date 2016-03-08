@@ -11,7 +11,7 @@ class Schematics {
                 let details = _obj._get;
 
                 //get parsed endpoint url
-                let endpointUrl = this._parseEndpointStr(details._cleanHref, params);
+                let endpointUrl = this._parseEndpointStr(details.href, params);
 
                 return ajax({
                     url: endpointUrl,
@@ -54,7 +54,7 @@ class Schematics {
         })
         .then((schema) => {
             this._storeEndpoints(schema);
-            resolve(this, schema);
+            resolve(this);
         })
         .catch(reject);
     }
@@ -63,18 +63,45 @@ class Schematics {
         //loop endpoints
         for(let name in endpoints){
             let details = endpoints[name];
+
+            //if details is a string
+            //the method is GET and the string is the href
+            if(typeof details === 'string'){
+                let detailsObj = {},
+                    href = details;
+                detailsObj._get = { href: href };
+                detailsObj.get = (params) => this._publicsMethods.get.apply(this, [params, detailsObj]);
+                this[name] = detailsObj;
+                continue;
+            }
       
             //loop request methods
             for(let reqMethod in details){
                 let reqMethodDetails = details[reqMethod];
-        
-                reqMethodDetails._cleanHref = reqMethodDetails.href.replace(/http(s)?\:\/\//, '');
-        
-                //save details to different location in object
-                details['_'+reqMethod] = reqMethodDetails;
-        
-                //replace method in object with function to use the endpoint
-                details[reqMethod] = (params) => this._publicsMethods[reqMethod].apply(this, [params, details]);
+
+                //if reqMethodDetails is a string
+                //its the href
+                if(typeof reqMethodDetails === 'string'){
+                    //if the method is get
+                    //its okay
+                    if(reqMethod === 'get'){
+                        let href = reqMethodDetails;
+                        details['_'+reqMethod] = { href: href };
+                        details[reqMethod] = (params) => this._publicsMethods[reqMethod].apply(this, [params, details]);
+                    } else {
+                        //if the method is not req
+                        //throw an error
+                        throw new Error('Expected an Object for method '+reqMethod+', instead found string "'+reqMethodDetails);
+                    }
+                } else {
+                    //if its a normal object with at least a href property
+            
+                    //save details to different location in object
+                    details['_'+reqMethod] = reqMethodDetails;
+            
+                    //replace method in object with function to use the endpoint
+                    details[reqMethod] = (params) => this._publicsMethods[reqMethod].apply(this, [params, details]);
+                }
             }
       
             this[name] = details;
@@ -102,7 +129,9 @@ class Schematics {
     }
   
     _getUrlEndpointParamNames(endpoint, params){
-        let matches = endpoint.match(/\:([^\/\:]+)/g) || [];
+        let cleanEndpoint = endpoint.replace(/http(s)?\:\/\//, ''),
+            matches = endpoint.match(/\:([^\/\:]+)/g) || [];
+
         matches = matches.map(function(match){
             return match.replace(/\:/g, '');
         });

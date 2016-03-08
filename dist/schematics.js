@@ -93,6 +93,8 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _SchemaParser = require('./SchemaParser');
@@ -119,7 +121,7 @@ var Schematics = function () {
                 var details = _obj._get;
 
                 //get parsed endpoint url
-                var endpointUrl = this._parseEndpointStr(details._cleanHref, params);
+                var endpointUrl = this._parseEndpointStr(details.href, params);
 
                 return (0, _ajax2.default)({
                     url: endpointUrl,
@@ -163,7 +165,7 @@ var Schematics = function () {
                 dataType: 'json'
             }).then(function (schema) {
                 _this2._storeEndpoints(schema);
-                resolve(_this2, schema);
+                resolve(_this2);
             }).catch(reject);
         }
     }, {
@@ -174,20 +176,57 @@ var Schematics = function () {
             var _loop = function _loop(name) {
                 var details = endpoints[name];
 
+                //if details is a string
+                //the method is GET and the string is the href
+                if (typeof details === 'string') {
+                    var _ret2 = function () {
+                        var detailsObj = {},
+                            href = details;
+                        detailsObj._get = { href: href };
+                        detailsObj.get = function (params) {
+                            return _this3._publicsMethods.get.apply(_this3, [params, detailsObj]);
+                        };
+                        _this3[name] = detailsObj;
+                        return {
+                            v: 'continue'
+                        };
+                    }();
+
+                    if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
+                }
+
                 //loop request methods
 
                 var _loop2 = function _loop2(reqMethod) {
                     var reqMethodDetails = details[reqMethod];
 
-                    reqMethodDetails._cleanHref = reqMethodDetails.href.replace(/http(s)?\:\/\//, '');
+                    //if reqMethodDetails is a string
+                    //its the href
+                    if (typeof reqMethodDetails === 'string') {
+                        //if the method is get
+                        //its okay
+                        if (reqMethod === 'get') {
+                            var href = reqMethodDetails;
+                            details['_' + reqMethod] = { href: href };
+                            details[reqMethod] = function (params) {
+                                return _this3._publicsMethods[reqMethod].apply(_this3, [params, details]);
+                            };
+                        } else {
+                            //if the method is not req
+                            //throw an error
+                            throw new Error('Expected an Object for method ' + reqMethod + ', instead found string "' + reqMethodDetails);
+                        }
+                    } else {
+                        //if its a normal object with at least a href property
 
-                    //save details to different location in object
-                    details['_' + reqMethod] = reqMethodDetails;
+                        //save details to different location in object
+                        details['_' + reqMethod] = reqMethodDetails;
 
-                    //replace method in object with function to use the endpoint
-                    details[reqMethod] = function (params) {
-                        return _this3._publicsMethods[reqMethod].apply(_this3, [params, details]);
-                    };
+                        //replace method in object with function to use the endpoint
+                        details[reqMethod] = function (params) {
+                            return _this3._publicsMethods[reqMethod].apply(_this3, [params, details]);
+                        };
+                    }
                 };
 
                 for (var reqMethod in details) {
@@ -199,7 +238,9 @@ var Schematics = function () {
 
             //loop endpoints
             for (var name in endpoints) {
-                _loop(name);
+                var _ret = _loop(name);
+
+                if (_ret === 'continue') continue;
             }
         }
     }, {
@@ -226,7 +267,9 @@ var Schematics = function () {
     }, {
         key: '_getUrlEndpointParamNames',
         value: function _getUrlEndpointParamNames(endpoint, params) {
-            var matches = endpoint.match(/\:([^\/\:]+)/g) || [];
+            var cleanEndpoint = endpoint.replace(/http(s)?\:\/\//, ''),
+                matches = endpoint.match(/\:([^\/\:]+)/g) || [];
+
             matches = matches.map(function (match) {
                 return match.replace(/\:/g, '');
             });
