@@ -27,7 +27,7 @@ The first step is creating a schema which lays out what endpoints your API has a
 ```
 
 #### #2 Library
-The next step is of course stating to use the library. Its quite simple: give it the URL to your schema and start hacking.
+Perfect! Now give the library the URL to your schema and start hacking. :)
 ```javascript
 new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json')
 .then(function(api){
