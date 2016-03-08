@@ -3,13 +3,12 @@ Schematics.js
 #### A cool API communication experiment
 
 ### What is it?
-The idea behind Schematics.js to provide the front-end with a dynamic and adaptive way to communicate with an API. Keep everything API in the API and allow easy communication.
+The idea behind Schematics is to keep everything API in the API and provide the front-end with all the information it needs to know what the API wants. This in oppose to traditional ways in which there is basically initially no real communication between server and client on what the client can expect.
 
 ### Example
-I can go on and lay out precisely what Schematics.js is and how it works but I personally always tend to perfer a code example so here it is:
 
 #### #1 Schema
-So as mentioned above the idea behind Schematics is to keep everything API in the API but provide the front-end with all the information it needs to know what the API wants. Thats why the first step is creating a schema which lays out what endpoints your API has and how to use them.
+The first step is creating a schema which lays out what endpoints your API has and how to use them.
 ```json
 {
     "user": "https://api.github.com/user/:username",
@@ -28,7 +27,7 @@ So as mentioned above the idea behind Schematics is to keep everything API in th
 ```
 
 #### #2 Library
-The next step is of course stating to use the library. Its quite simple: you give it the URL to your schema and you can start using it.
+The next step is of course stating to use the library. Its quite simple: give it the URL to your schema and start hacking.
 ```javascript
 new Schematics('https://api.example.com')
 .then(function(api){
