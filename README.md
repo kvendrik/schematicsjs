@@ -11,17 +11,17 @@ The idea behind Schematics is to keep everything API in the API and provide the 
 The first step is creating a schema which lays out what endpoints your API has and how to use them.
 ```json
 {
-    "user": "https://api.github.com/user/:username",
-    "articles": "https://api.github.com/articles",
-    "article": {
+    "users": "https://api.github.com/users/:username",
+    "emojis": "https://api.github.com/emojis",
+    "events": {
         "post": {
-            "href": "https://api.github.com/article",
+            "href": "https://api.github.com/events",
             "params": {
-                "name": { "type": "String", "optional": true },
-                "date": "Date"
+                "name": "String",
+                "date": { "type": "String", "optional": true }
             }
         },
-        "get": "https://api.github.com/article/:id"
+        "get": "https://api.github.com/events"
     }
 }
 ```
@@ -29,15 +29,15 @@ The first step is creating a schema which lays out what endpoints your API has a
 #### #2 Library
 The next step is of course stating to use the library. Its quite simple: give it the URL to your schema and start hacking.
 ```javascript
-new Schematics('https://api.example.com')
+new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json')
 .then(function(api){
 
-    api.articles.get()
+    api.users.get({ username: 'kvendrik' })
     .then((data) => console.log(data))
     .catch((err) => console.log(err));
-    
-    api.article.post({ date: new Date() })
-    .then((res) => console.log(res))
+
+    api.events.post({ name: 'Koen' })
+    .then((data) => console.log(data))
     .catch((err) => console.log(err));
 
 });
