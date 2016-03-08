@@ -43,4 +43,4 @@ new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json')
 });
 ```
 
-
+![](http://i.giphy.com/TlQHWni5OwcCs.gif)
