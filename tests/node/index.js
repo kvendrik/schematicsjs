@@ -28,7 +28,7 @@ let httpMethod = function(settings){
     return new Promise(doRequest);
 };
 
-new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', httpMethod)
+new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpMethod)
 .then(function(api){
 
     api.users.get({ username: 'kvendrik', limit: 5 })

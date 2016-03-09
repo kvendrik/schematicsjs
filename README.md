@@ -27,9 +27,11 @@ The first step is creating a schema which lays out what endpoints your API has a
 ```
 
 #### #2 Library
-Perfect! Now give the library the URL to your schema and your [HTTP method](#your-http-method) and start hacking. :)
+Perfect! Now grab the library and include it in your project. This can be done using `npm i schematicsjs` (for Node), `bower i schematicsjs` (for Web) or by just grabbing the source from the `dist/` folder.
+
+Perfect! Now include the library into your project, give it the URL to your schema and your [HTTP method](#your-http-method) and start hacking. :)
 ```javascript
-new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', httpMethod)
+new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpMethod)
 .then(function(api){
 
     api.users.get({ username: 'kvendrik', limit: 5 })
