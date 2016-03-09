@@ -46,7 +46,7 @@ new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', httpMe
 ![](http://i.giphy.com/TlQHWni5OwcCs.gif)
 
 ### Your HTTP method
-While we aim to make things as easy for you as possible we don't want to keep things as minimal as possible while also giving you all a lot of flexibility. Thats why we ask from you you provide the library with your own method to do HTTP requests.
+While we aim to make things as easy for you as possible we also want to keep things as minimal and flexible as possible. Thats why we ask from you you provide the library with your own method to do HTTP requests.
 
 **Interested in testing out the above example real quick?**<br>You can use the method we use for testing purposes which you can find [here](http://kvendrik.github.io/schematicsjs/test/ajax.js).
 
