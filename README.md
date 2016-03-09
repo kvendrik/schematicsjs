@@ -48,12 +48,12 @@ new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', httpMe
 ### Your HTTP method
 While we aim to make things as easy for you as possible we don't want to keep things as minimal as possible while also giving you all a lot of flexibility. Thats why we ask from you you provide the library with your own method to do HTTP requests.
 
-**Interested in testing out the above example real quick?** You can use the method we use for testing purposes which you can find [here](http://kvendrik.github.io/schematicsjs/test/ajax.js).
+**Interested in testing out the above example real quick?**<br>You can use the method we use for testing purposes which you can find [here](http://kvendrik.github.io/schematicsjs/test/ajax.js).
 
 #### Using a framework?
-With for example Angular your can just pass in Angular's `$http` method.
+You might be able to simply use your frameworks HTTP method. With for example Angular you can just pass in Angular's `$http` method.
 
-#### A custom method
+#### Custom method
 A few requirements: your HTTP method should:
 * Accept a settings object with:
     * `type`: the request type e.g. `GET`
