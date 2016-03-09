@@ -1,5 +1,5 @@
 import SchemaParser from './SchemaParser'
-import ajax from './ajax'
+import http from './http'
 
 class Schematics {
 
@@ -13,7 +13,7 @@ class Schematics {
                 //get parsed endpoint url
                 let endpointUrl = this._parseEndpointStr(details.href, params);
 
-                return ajax({
+                return http({
                     url: endpointUrl,
                     dataType: 'json'
                 });
@@ -38,7 +38,7 @@ class Schematics {
                     throw new Error(result.message);
                 }
 
-                ajax({
+                http({
                     type: reqName,
                     url: details.href,
                     dataType: 'json'
@@ -50,7 +50,7 @@ class Schematics {
     }
 
     _getSchema(schemaUrl, resolve, reject){
-        ajax({
+        http({
             url: schemaUrl,
             dataType: 'json'
         })

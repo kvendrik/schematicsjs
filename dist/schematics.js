@@ -105,9 +105,9 @@ var _SchemaParser = require('./SchemaParser');
 
 var _SchemaParser2 = _interopRequireDefault(_SchemaParser);
 
-var _ajax = require('./ajax');
+var _http = require('./http');
 
-var _ajax2 = _interopRequireDefault(_ajax);
+var _http2 = _interopRequireDefault(_http);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -127,7 +127,7 @@ var Schematics = function () {
                 //get parsed endpoint url
                 var endpointUrl = this._parseEndpointStr(details.href, params);
 
-                return (0, _ajax2.default)({
+                return (0, _http2.default)({
                     url: endpointUrl,
                     dataType: 'json'
                 });
@@ -162,7 +162,7 @@ var Schematics = function () {
                         throw new Error(result.message);
                     }
 
-                    (0, _ajax2.default)({
+                    (0, _http2.default)({
                         type: reqName,
                         url: details.href,
                         dataType: 'json'
@@ -175,7 +175,7 @@ var Schematics = function () {
         value: function _getSchema(schemaUrl, resolve, reject) {
             var _this2 = this;
 
-            (0, _ajax2.default)({
+            (0, _http2.default)({
                 url: schemaUrl,
                 dataType: 'json'
             }).then(function (schema) {
@@ -332,7 +332,7 @@ var Schematics = function () {
 
 exports.default = Schematics;
 
-},{"./SchemaParser":1,"./ajax":3}],3:[function(require,module,exports){
+},{"./SchemaParser":1,"./http":3}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
