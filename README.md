@@ -6,7 +6,7 @@ Schematics.js
 The idea behind Schematics is to keep everything API in the API and provide the front-end with all the information it needs to know what the API wants. This in oppose to traditional ways in which there is basically initially no real communication between server and client on what the client can expect.
 
 ### Examples
-Check out the [Web](https://github.com/kvendrik/schematicsjs/blob/gh-pages/tests/web/index.html) and [Node](https://github.com/kvendrik/schematicsjs/blob/feature/package-managers-support/tests/node/index.js) examples.
+Check out the [Web](https://github.com/kvendrik/schematicsjs/blob/gh-pages/tests/web/index.html) and [Node.js](https://github.com/kvendrik/schematicsjs/blob/feature/package-managers-support/tests/node/index.js) examples.
 
 ### Usage
 
@@ -30,9 +30,12 @@ The first step is creating a schema which lays out what endpoints your API has a
 ```
 
 #### #2 Library
-Perfect! Now grab the library and include it in your project. This can be done using `npm i schematicsjs --save` (for Node), or by just grabbing the source from the `dist/` folder.
+Grab the library:
+* `npm i schematicsjs --save`
+* `bower i schematicsjs --save`
+* Grab source from the `dist/` folder
 
-You're all set! Give the library the URL to your schema and your [HTTP method](#your-http-method) and start hacking. :)
+Perfect! Now give the library the URL to your schema and your [HTTP method](#your-http-method) and start hacking. :)
 ```javascript
 new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpMethod)
 .then(function(api){

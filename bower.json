@@ -1,0 +1,22 @@
+{
+  "name": "schematicsjs",
+  "version": "0.1.0",
+  "homepage": "https://github.com/kvendrik/schematicsjs",
+  "authors": [
+    "Koen Vendrik <k.vendrik@gmail.com>"
+  ],
+  "description": "An API communication experiment",
+  "main": "dist/schematics.min.js",
+  "moduleType": [
+    "es6",
+    "node"
+  ],
+  "keywords": [
+    "schematicsjs"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "*",
+    "!dist/*"
+  ]
+}
