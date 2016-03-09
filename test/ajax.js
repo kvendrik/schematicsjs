@@ -1,6 +1,6 @@
 var ajax = function(settings){
 
-    let doRequest = function(resolve, reject){
+    var doRequest = function(resolve, reject){
         var httpRequest = new XMLHttpRequest(),
             data = settings.data,
             dataType = settings.dataType || 'json';
