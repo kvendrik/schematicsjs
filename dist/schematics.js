@@ -261,21 +261,44 @@ var Schematics = function () {
     }, {
         key: '_parseEndpointStr',
         value: function _parseEndpointStr(endpoint, givenParams) {
-            var endpointParamNames = this._getUrlEndpointParamNames(endpoint);
+            var endpointParamNames = this._getUrlEndpointParamNames(endpoint),
+                requiredParamNames = endpointParamNames.required,
+                optionalParamNames = endpointParamNames.optional;
 
             //check if all required params are provided
-            endpointParamNames.forEach(function (name) {
+            requiredParamNames.forEach(function (name) {
                 if (typeof givenParams[name] === 'undefined') {
                     //throw error
                     throw new Error('Param "' + name + '" is required for endpoint ' + endpoint);
                 }
             });
 
-            //parse endpoint URL
+            //check if there aren't any params that are not needed
             for (var name in givenParams) {
+                if (requiredParamNames.indexOf(name) === -1 && optionalParamNames.indexOf(name) === -1) {
+                    //throw error
+                    throw new Error('Param "' + name + '" is not not found in the schema for endpoint ' + endpoint);
+                }
+            }
+
+            //parse endpoint URL
+            requiredParamNames.forEach(function (name) {
                 var val = givenParams[name];
                 endpoint = endpoint.replace(':' + name, val);
-            }
+            });
+
+            optionalParamNames.forEach(function (name) {
+                var val = givenParams[name],
+                    paramRegex = new RegExp('(\\?|\\&)' + name);
+
+                if (typeof val !== 'undefined') {
+                    //if the optional param is given, put it in the URL
+                    endpoint = endpoint.replace(paramRegex, '$1' + name + '=' + val);
+                } else {
+                    //otherwise remove it from the url
+                    endpoint = endpoint.replace(paramRegex, '');
+                }
+            });
 
             return endpoint;
         }
@@ -283,12 +306,22 @@ var Schematics = function () {
         key: '_getUrlEndpointParamNames',
         value: function _getUrlEndpointParamNames(endpoint, params) {
             var cleanEndpoint = endpoint.replace(/http(s)?\:\/\//, ''),
-                matches = endpoint.match(/\:([^\/\:]+)/g) || [];
+                matches = [],
+                requiredParamMatches = endpoint.match(/\:([^\/\:\?]+)/g) || [],
+                optionalParamMatches = endpoint.match(/(\?|\&)([^\&]+)/g) || [];
 
-            matches = matches.map(function (match) {
+            requiredParamMatches = requiredParamMatches.map(function (match) {
                 return match.replace(/\:/g, '');
             });
-            return matches;
+
+            optionalParamMatches = optionalParamMatches.map(function (match) {
+                return match.replace(/\&|\?/g, '');
+            });
+
+            return {
+                required: requiredParamMatches,
+                optional: optionalParamMatches
+            };
         }
     }]);
 

@@ -11,7 +11,7 @@ The idea behind Schematics is to keep everything API in the API and provide the 
 The first step is creating a schema which lays out what endpoints your API has and how to use them.
 ```json
 {
-    "users": "https://api.github.com/users/:username",
+    "users": "https://api.github.com/users/:username?limit&offset",
     "emojis": "https://api.github.com/emojis",
     "events": {
         "post": {
@@ -32,7 +32,7 @@ Perfect! Now give the library the URL to your schema and start hacking. :)
 new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json')
 .then(function(api){
 
-    api.users.get({ username: 'kvendrik' })
+    api.users.get({ username: 'kvendrik', limit: 5 })
     .then((data) => console.log(data))
     .catch((err) => console.log(err));
 
@@ -44,3 +44,22 @@ new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json')
 ```
 
 ![](http://i.giphy.com/TlQHWni5OwcCs.gif)
+
+### Schema Syntax
+Some things you might find useful to know:
+
+* `GET`
+    * A details object with a `href` is optional
+    * Queries can be defined with just their key e.g. `?offset&limit`
+    * Queries are always optional
+    * Parameters can be defined using `:` e.g. `/:username`
+    * Parameters are always required
+* `POST`, `PUT` & `DELETE`
+    * These all require a details object
+    * This should contain a `href` String and a `params` Object
+    * Params
+        * An object with the properties that should go into the request body
+        * As value you specify the data type the property should be
+        * Currently only JavaScript data types are supported, these include: String, Number, Date, Array, Object and Boolean
+        * These properties are required by default
+        * If you would like to make a property optional define a details Object instead of the data type String e.g. `{ "type": "String", "optional": true }`

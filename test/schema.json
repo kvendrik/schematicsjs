@@ -1,5 +1,5 @@
 {
-    "users": "https://api.github.com/users/:username",
+    "users": "https://api.github.com/users/:username?limit&offset",
     "emojis": "https://api.github.com/emojis",
     "events": {
         "post": {
