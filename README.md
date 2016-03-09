@@ -33,7 +33,7 @@ The first step is creating a schema which lays out what endpoints your API has a
 Grab the library:
 * `npm i schematicsjs --save`
 * `bower i schematicsjs --save`
-* Grab source from the `dist/` folder
+* Grab the source from the `dist/` folder
 
 Perfect! Now give the library the URL to your schema and your [HTTP method](#your-http-method) and start hacking. :)
 ```javascript
