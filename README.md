@@ -65,9 +65,9 @@ Some things you might find useful to know:
         * If you would like to make a property optional define a details Object instead of the data type String e.g. `{ "type": "String", "optional": true }`
 
 ### Using your own HTTP method
-While we aim to make things as easy for you as possible we do not want to restrict you to anything. Thats why we allow you to use your own HTTP method instead of the one we provide for you to use.
+While we aim to make things as easy for you as possible we don't want to restrict you to anything. Thats why we allow you to use your own HTTP method instead of the one we provide for you to use.
 
-A few requirements. Your HTTP method should:
+A few requirements: your HTTP method should:
 * Accept a settings object with:
     * `type`: the request type e.g. `GET`
     * `url`: the URL to send the request to
@@ -75,7 +75,7 @@ A few requirements. Your HTTP method should:
 * Return a `Promise`
 
 Example
-```
+```javascript
 new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', function(settings){
     let doRequest = function(resolve, reject){
         //do request based on settings
