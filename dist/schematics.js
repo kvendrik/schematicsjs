@@ -1,10 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -88,32 +84,20 @@ var SchemaParser = function () {
     return SchemaParser;
 }();
 
-exports.default = SchemaParser;
+module.exports = SchemaParser;
 
 },{}],2:[function(require,module,exports){
 'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _SchemaParser = require('./SchemaParser');
-
-var _SchemaParser2 = _interopRequireDefault(_SchemaParser);
-
-var _ajax = require('./ajax');
-
-var _ajax2 = _interopRequireDefault(_ajax);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var http = _ajax2.default;
+var SchemaParser = require('./SchemaParser');
+
+var http = void 0;
 
 var Schematics = function () {
     function Schematics(schemaUrl, httpMethod) {
@@ -121,8 +105,12 @@ var Schematics = function () {
 
         _classCallCheck(this, Schematics);
 
-        //when the user specifies a http method themselves use that for requests
-        http = typeof httpMethod === 'function' ? httpMethod : _ajax2.default;
+        if (typeof schemaUrl !== 'string' || typeof httpMethod !== 'function') {
+            this._throwError('Please provide both schema url String and a http method');
+        }
+
+        //use the user's http method for requests
+        http = httpMethod;
 
         this._publicsMethods = {
             get: function get(params, _obj) {
@@ -154,16 +142,28 @@ var Schematics = function () {
     }
 
     _createClass(Schematics, [{
+        key: '_throwError',
+        value: function _throwError(msg) {
+            var err = new Error(msg);
+            if (console && console.error) {
+                console.error(err);
+            } else {
+                throw err;
+            }
+        }
+    }, {
         key: '_doRequestWithParams',
         value: function _doRequestWithParams(reqName, params, _obj) {
+            var _this2 = this;
+
             //get endpoint details
             var details = _obj['_' + reqName],
-                schemaParser = new _SchemaParser2.default(details.params);
+                schemaParser = new SchemaParser(details.params);
 
             return new Promise(function (resolve, reject) {
                 schemaParser.checkParamsValid(params, function (result) {
                     if (!result.valid) {
-                        throw new Error(result.message);
+                        _this2._throwError(result.message);
                     }
 
                     http({
@@ -177,7 +177,7 @@ var Schematics = function () {
     }, {
         key: '_getSchema',
         value: function _getSchema(schemaUrl, resolve, reject) {
-            var _this2 = this;
+            var _this3 = this;
 
             http({
                 url: schemaUrl
@@ -186,17 +186,17 @@ var Schematics = function () {
 
                 if (schemaType !== 'object') {
                     //not a valid schema
-                    throw new Error('Thats not a valid schema. Expected type object, got type ' + schemaType);
+                    _this3._throwError('Thats not a valid schema. Expected type object, got type ' + schemaType);
                 }
 
-                _this2._storeEndpoints(schema);
-                resolve(_this2);
+                _this3._storeEndpoints(schema);
+                resolve(_this3);
             }).catch(reject);
         }
     }, {
         key: '_storeEndpoints',
         value: function _storeEndpoints(endpoints) {
-            var _this3 = this;
+            var _this4 = this;
 
             var _loop = function _loop(name) {
                 var details = endpoints[name];
@@ -209,9 +209,9 @@ var Schematics = function () {
                             href = details;
                         detailsObj._get = { href: href };
                         detailsObj.get = function (params) {
-                            return _this3._publicsMethods.get.apply(_this3, [params, detailsObj]);
+                            return _this4._publicsMethods.get.apply(_this4, [params, detailsObj]);
                         };
-                        _this3[name] = detailsObj;
+                        _this4[name] = detailsObj;
                         return {
                             v: 'continue'
                         };
@@ -234,12 +234,12 @@ var Schematics = function () {
                             var href = reqMethodDetails;
                             details['_' + reqMethod] = { href: href };
                             details[reqMethod] = function (params) {
-                                return _this3._publicsMethods[reqMethod].apply(_this3, [params, details]);
+                                return _this4._publicsMethods[reqMethod].apply(_this4, [params, details]);
                             };
                         } else {
                             //if the method is not req
                             //throw an error
-                            throw new Error('Expected an Object for method ' + reqMethod + ', instead found string "' + reqMethodDetails);
+                            _this4._throwError('Expected an Object for method ' + reqMethod + ', instead found string "' + reqMethodDetails);
                         }
                     } else {
                         //if its a normal object with at least a href property
@@ -249,7 +249,7 @@ var Schematics = function () {
 
                         //replace method in object with function to use the endpoint
                         details[reqMethod] = function (params) {
-                            return _this3._publicsMethods[reqMethod].apply(_this3, [params, details]);
+                            return _this4._publicsMethods[reqMethod].apply(_this4, [params, details]);
                         };
                     }
                 };
@@ -258,7 +258,7 @@ var Schematics = function () {
                     _loop2(reqMethod);
                 }
 
-                _this3[name] = details;
+                _this4[name] = details;
             };
 
             //loop endpoints
@@ -271,6 +271,8 @@ var Schematics = function () {
     }, {
         key: '_parseEndpointStr',
         value: function _parseEndpointStr(endpoint, givenParams) {
+            var _this5 = this;
+
             var endpointParamNames = this._getUrlEndpointParamNames(endpoint),
                 requiredParamNames = endpointParamNames.required,
                 optionalParamNames = endpointParamNames.optional;
@@ -279,7 +281,7 @@ var Schematics = function () {
             requiredParamNames.forEach(function (name) {
                 if (typeof givenParams[name] === 'undefined') {
                     //throw error
-                    throw new Error('Param "' + name + '" is required for endpoint ' + endpoint);
+                    _this5._throwError('Param "' + name + '" is required for endpoint ' + endpoint);
                 }
             });
 
@@ -287,7 +289,7 @@ var Schematics = function () {
             for (var name in givenParams) {
                 if (requiredParamNames.indexOf(name) === -1 && optionalParamNames.indexOf(name) === -1) {
                     //throw error
-                    throw new Error('Param "' + name + '" is not not found in the schema for endpoint ' + endpoint);
+                    this._throwError('Param "' + name + '" is not not found in the schema for endpoint ' + endpoint);
                 }
             }
 
@@ -340,86 +342,17 @@ var Schematics = function () {
 
 ;
 
-exports.default = Schematics;
+module.exports = Schematics;
 
-},{"./SchemaParser":1,"./ajax":3}],3:[function(require,module,exports){
+},{"./SchemaParser":1}],3:[function(require,module,exports){
 'use strict';
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
+var Schematics = require('./Schematics');
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+if (typeof window !== 'undefined') {
+    window.Schematics = Schematics;
+} else if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Schematics;
+}
 
-exports.default = function (settings) {
-
-    var doRequest = function doRequest(resolve, reject) {
-        var httpRequest = new XMLHttpRequest(),
-            data = settings.data,
-            dataType = settings.dataType || 'json';
-
-        httpRequest.onreadystatechange = function () {
-            if (httpRequest.readyState === 4) {
-
-                var responseString = httpRequest.responseText,
-                    rtrnData;
-
-                if (dataType === 'json') {
-                    try {
-                        rtrnData = JSON.parse(responseString);
-                    } catch (err) {
-                        rtrnData = responseString;
-                    }
-                } else {
-                    rtrnData = responseString;
-                }
-
-                if (httpRequest.status === 200) {
-                    if (typeof resolve === 'function') {
-                        resolve(rtrnData, httpRequest);
-                    }
-                } else {
-                    if (typeof reject === 'function') {
-                        reject(rtrnData, httpRequest);
-                    }
-                }
-            }
-        };
-
-        var requestType = settings.type !== undefined ? settings.type.toUpperCase() : 'GET',
-            postTypes = ['POST', 'PUT', 'DELETE'];
-
-        httpRequest.open(requestType, settings.url, true);
-
-        if (postTypes.indexOf(requestType) !== -1) {
-            if ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object') {
-                httpRequest.setRequestHeader('Content-Type', 'application/json');
-            } else {
-                httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            }
-        }
-
-        if (dataType === 'json' && (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' && !Array.isArray(data)) {
-            data = JSON.stringify(data);
-        }
-
-        httpRequest.send(data);
-    };
-
-    return new Promise(doRequest);
-};
-
-;
-
-},{}],4:[function(require,module,exports){
-'use strict';
-
-var _Schematics = require('./Schematics');
-
-var _Schematics2 = _interopRequireDefault(_Schematics);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-window.Schematics = _Schematics2.default;
-
-},{"./Schematics":2}]},{},[4]);
+},{"./Schematics":2}]},{},[3]);

@@ -69,4 +69,4 @@ class SchemaParser {
     }
 }
 
-export default SchemaParser
+module.exports = SchemaParser;

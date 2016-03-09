@@ -1,4 +1,4 @@
-import SchemaParser from './SchemaParser'
+let SchemaParser = require('./SchemaParser');
 
 let http;
 
@@ -6,7 +6,7 @@ class Schematics {
 
     constructor(schemaUrl, httpMethod){
         if(typeof schemaUrl !== 'string' || typeof httpMethod !== 'function'){
-            throw new Error('Please provide both schema url String and a http method');
+            this._throwError('Please provide both schema url String and a http method');
         }
 
         //use the user's http method for requests
@@ -33,15 +33,24 @@ class Schematics {
         return new Promise((resolve, reject) => this._getSchema(schemaUrl, resolve, reject));
     }
 
+    _throwError(msg){
+        let err = new Error(msg);
+        if(console && console.error){
+            console.error(err);
+        } else {
+            throw err;
+        }
+    }
+
     _doRequestWithParams(reqName, params, _obj){
         //get endpoint details
         let details = _obj['_'+reqName],
             schemaParser = new SchemaParser(details.params);
 
-        return new Promise(function(resolve, reject){
-            schemaParser.checkParamsValid(params, function(result){
+        return new Promise((resolve, reject) => {
+            schemaParser.checkParamsValid(params, (result) => {
                 if(!result.valid){
-                    throw new Error(result.message);
+                    this._throwError(result.message);
                 }
 
                 http({
@@ -64,7 +73,7 @@ class Schematics {
 
             if(schemaType !== 'object'){
                 //not a valid schema
-                throw new Error('Thats not a valid schema. Expected type object, got type '+schemaType);
+                this._throwError('Thats not a valid schema. Expected type object, got type '+schemaType);
             }
 
             this._storeEndpoints(schema);
@@ -105,7 +114,7 @@ class Schematics {
                     } else {
                         //if the method is not req
                         //throw an error
-                        throw new Error('Expected an Object for method '+reqMethod+', instead found string "'+reqMethodDetails);
+                        this._throwError('Expected an Object for method '+reqMethod+', instead found string "'+reqMethodDetails);
                     }
                 } else {
                     //if its a normal object with at least a href property
@@ -128,10 +137,10 @@ class Schematics {
             optionalParamNames = endpointParamNames.optional;
     
         //check if all required params are provided
-        requiredParamNames.forEach(function(name){
+        requiredParamNames.forEach((name) => {
             if(typeof givenParams[name] === 'undefined'){
                 //throw error
-                throw new Error('Param "'+name+'" is required for endpoint '+endpoint);
+                this._throwError('Param "'+name+'" is required for endpoint '+endpoint);
             }
         });
 
@@ -139,7 +148,7 @@ class Schematics {
         for(let name in givenParams){
             if(requiredParamNames.indexOf(name) === -1 && optionalParamNames.indexOf(name) === -1){
                 //throw error
-                throw new Error('Param "'+name+'" is not not found in the schema for endpoint '+endpoint);
+                this._throwError('Param "'+name+'" is not not found in the schema for endpoint '+endpoint);
             }
         }
     
@@ -187,4 +196,4 @@ class Schematics {
   
 };
 
-export default Schematics
+module.exports = Schematics;

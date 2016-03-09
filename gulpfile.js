@@ -11,7 +11,7 @@ gulp.task('serve-test', () => {
         livereload: true,
         host: '0.0.0.0',
         port: 9000,
-        root: './test'
+        root: 'tests/web'
     });
 });
 
@@ -26,7 +26,7 @@ gulp.task('browserify', () => {
       .pipe(source('schematics.js'))
       .pipe(buffer())
 	  .pipe(gulp.dest('dist'))
-      .pipe(gulp.dest('test'))
+      .pipe(gulp.dest('tests/web'))
 
       .pipe(uglify())
       .pipe(rename('schematics.min.js'))

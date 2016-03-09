@@ -1,3 +1,7 @@
-import Schematics from './Schematics'
+let Schematics = require('./Schematics');
 
-window.Schematics = Schematics;
+if(typeof window !== 'undefined'){
+    window.Schematics = Schematics;
+} else if(typeof module !== 'undefined' && module.exports) {
+    module.exports = Schematics;
+}
