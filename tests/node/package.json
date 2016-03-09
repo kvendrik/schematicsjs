@@ -10,6 +10,7 @@
   "license": "MIT",
   "devDependencies": {},
   "dependencies": {
-    "request": "^2.69.0"
+    "request": "^2.69.0",
+    "schematicsjs": "^0.1.0"
   }
 }

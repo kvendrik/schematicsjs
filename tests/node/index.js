@@ -1,4 +1,4 @@
-var Schematics = require('../../src'),
+var Schematics = require('schematicsjs'),
     request = require('request');
 
 let httpMethod = function(settings){
