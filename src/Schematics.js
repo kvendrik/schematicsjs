@@ -1,9 +1,13 @@
 import SchemaParser from './SchemaParser'
-import http from './http'
+import ajax from './ajax'
+
+let http = ajax;
 
 class Schematics {
 
-    constructor(schemaUrl){
+    constructor(schemaUrl, httpMethod){
+        //when the user specifies a http method themselves use that for requests
+        http = (typeof httpMethod === 'function' ? httpMethod : ajax);
 
         this._publicsMethods = {
             get: function(params, _obj){
@@ -14,8 +18,7 @@ class Schematics {
                 let endpointUrl = this._parseEndpointStr(details.href, params);
 
                 return http({
-                    url: endpointUrl,
-                    dataType: 'json'
+                    url: endpointUrl
                 });
             },
 
@@ -41,7 +44,7 @@ class Schematics {
                 http({
                     type: reqName,
                     url: details.href,
-                    dataType: 'json'
+                    data: params
                 })
                 .then(resolve)
                 .catch(reject);
@@ -51,10 +54,16 @@ class Schematics {
 
     _getSchema(schemaUrl, resolve, reject){
         http({
-            url: schemaUrl,
-            dataType: 'json'
+            url: schemaUrl
         })
         .then((schema) => {
+            let schemaType = typeof schema;
+
+            if(schemaType !== 'object'){
+                //not a valid schema
+                throw new Error('Thats not a valid schema. Expected type object, got type '+schemaType);
+            }
+
             this._storeEndpoints(schema);
             resolve(this);
         })

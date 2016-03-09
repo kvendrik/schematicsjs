@@ -1,9 +1,9 @@
 export default function(settings){
 
-    var doRequest = function(resolve, reject){
+    let doRequest = function(resolve, reject){
         var httpRequest = new XMLHttpRequest(),
             data = settings.data,
-            dataType = settings.dataType;
+            dataType = settings.dataType || 'json';
 
         httpRequest.onreadystatechange = function(){
             if(httpRequest.readyState === 4){

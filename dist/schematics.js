@@ -105,19 +105,24 @@ var _SchemaParser = require('./SchemaParser');
 
 var _SchemaParser2 = _interopRequireDefault(_SchemaParser);
 
-var _http = require('./http');
+var _ajax = require('./ajax');
 
-var _http2 = _interopRequireDefault(_http);
+var _ajax2 = _interopRequireDefault(_ajax);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var http = _ajax2.default;
+
 var Schematics = function () {
-    function Schematics(schemaUrl) {
+    function Schematics(schemaUrl, httpMethod) {
         var _this = this;
 
         _classCallCheck(this, Schematics);
+
+        //when the user specifies a http method themselves use that for requests
+        http = typeof httpMethod === 'function' ? httpMethod : _ajax2.default;
 
         this._publicsMethods = {
             get: function get(params, _obj) {
@@ -127,9 +132,8 @@ var Schematics = function () {
                 //get parsed endpoint url
                 var endpointUrl = this._parseEndpointStr(details.href, params);
 
-                return (0, _http2.default)({
-                    url: endpointUrl,
-                    dataType: 'json'
+                return http({
+                    url: endpointUrl
                 });
             },
 
@@ -162,10 +166,10 @@ var Schematics = function () {
                         throw new Error(result.message);
                     }
 
-                    (0, _http2.default)({
+                    http({
                         type: reqName,
                         url: details.href,
-                        dataType: 'json'
+                        data: params
                     }).then(resolve).catch(reject);
                 });
             });
@@ -175,10 +179,16 @@ var Schematics = function () {
         value: function _getSchema(schemaUrl, resolve, reject) {
             var _this2 = this;
 
-            (0, _http2.default)({
-                url: schemaUrl,
-                dataType: 'json'
+            http({
+                url: schemaUrl
             }).then(function (schema) {
+                var schemaType = typeof schema === 'undefined' ? 'undefined' : _typeof(schema);
+
+                if (schemaType !== 'object') {
+                    //not a valid schema
+                    throw new Error('Thats not a valid schema. Expected type object, got type ' + schemaType);
+                }
+
                 _this2._storeEndpoints(schema);
                 resolve(_this2);
             }).catch(reject);
@@ -332,7 +342,7 @@ var Schematics = function () {
 
 exports.default = Schematics;
 
-},{"./SchemaParser":1,"./http":3}],3:[function(require,module,exports){
+},{"./SchemaParser":1,"./ajax":3}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -346,7 +356,7 @@ exports.default = function (settings) {
     var doRequest = function doRequest(resolve, reject) {
         var httpRequest = new XMLHttpRequest(),
             data = settings.data,
-            dataType = settings.dataType;
+            dataType = settings.dataType || 'json';
 
         httpRequest.onreadystatechange = function () {
             if (httpRequest.readyState === 4) {
