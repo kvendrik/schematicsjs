@@ -1,4 +1,4 @@
-export default function(settings){
+var ajax = function(settings){
 
     let doRequest = function(resolve, reject){
         var httpRequest = new XMLHttpRequest(),

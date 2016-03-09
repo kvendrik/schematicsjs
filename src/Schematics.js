@@ -1,13 +1,16 @@
 import SchemaParser from './SchemaParser'
-import ajax from './ajax'
 
-let http = ajax;
+let http;
 
 class Schematics {
 
     constructor(schemaUrl, httpMethod){
-        //when the user specifies a http method themselves use that for requests
-        http = (typeof httpMethod === 'function' ? httpMethod : ajax);
+        if(typeof schemaUrl !== 'string' || typeof httpMethod !== 'function'){
+            throw new Error('Please provide both schema url String and a http method');
+        }
+
+        //use the user's http method for requests
+        http = httpMethod;
 
         this._publicsMethods = {
             get: function(params, _obj){

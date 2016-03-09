@@ -6,9 +6,10 @@
 </head>
 <body>
 
+<script src="ajax.js"></script>
 <script src="schematics.js"></script>
 <script>
-new Schematics('http://localhost:9000/schema.json')
+new Schematics('http://localhost:9000/schema.json', ajax)
 .then(function(api){
 
     api.users.get({ username: 'kvendrik', limit: 5 })

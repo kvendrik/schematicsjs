@@ -27,9 +27,9 @@ The first step is creating a schema which lays out what endpoints your API has a
 ```
 
 #### #2 Library
-Perfect! Now give the library the URL to your schema and start hacking. :)
+Perfect! Now give the library the URL to your schema and your [HTTP method](#your-http-method) and start hacking. :)
 ```javascript
-new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json')
+new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', httpMethod)
 .then(function(api){
 
     api.users.get({ username: 'kvendrik', limit: 5 })
@@ -44,6 +44,32 @@ new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json')
 ```
 
 ![](http://i.giphy.com/TlQHWni5OwcCs.gif)
+
+### Your HTTP method
+While we aim to make things as easy for you as possible we don't want to keep things as minimal as possible while also giving you all a lot of flexibility. Thats why we ask from you you provide the library with your own method to do HTTP requests.
+
+**Interested in testing out the above example real quick?** You can use the method we use for testing purposes which you can find [here](http://kvendrik.github.io/schematicsjs/test/ajax.js).
+
+#### Using a framework?
+With for example Angular your can just pass in Angular's `$http` method.
+
+#### A custom method
+A few requirements: your HTTP method should:
+* Accept a settings object with:
+    * `type`: the request type e.g. `GET`
+    * `url`: the URL to send the request to
+    * `data`: an object to store the request body in
+* Return a `Promise`
+
+Example
+```javascript
+new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', function(settings){
+    let doRequest = function(resolve, reject){
+        //do request based on settings
+    };
+    return new Promise(doRequest);
+});
+```
 
 ### Schema Syntax
 Some things you might find useful to know:
@@ -63,23 +89,3 @@ Some things you might find useful to know:
         * Currently only JavaScript data types are supported, these include: String, Number, Date, Array, Object and Boolean
         * These properties are required by default
         * If you would like to make a property optional define a details Object instead of the data type String e.g. `{ "type": "String", "optional": true }`
-
-### Using your own HTTP method
-While we aim to make things as easy for you as possible we don't want to restrict you to anything. Thats why we allow you to use your own HTTP method instead of the one we provide for you to use.
-
-A few requirements: your HTTP method should:
-* Accept a settings object with:
-    * `type`: the request type e.g. `GET`
-    * `url`: the URL to send the request to
-    * `data`: an object to store the request body in
-* Return a `Promise`
-
-Example
-```javascript
-new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', function(settings){
-    let doRequest = function(resolve, reject){
-        //do request based on settings
-    };
-    return new Promise(doRequest);
-});
-```
