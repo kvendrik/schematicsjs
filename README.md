@@ -32,7 +32,7 @@ The first step is creating a schema which lays out what endpoints your API has a
 #### #2 Library
 Perfect! Now grab the library and include it in your project. This can be done using `npm i schematicsjs --save` (for Node), or by just grabbing the source from the `dist/` folder.
 
-Perfect! Now give the library the URL to your schema and your [HTTP method](#your-http-method) and start hacking. :)
+You're all set! Give the library the URL to your schema and your [HTTP method](#your-http-method) and start hacking. :)
 ```javascript
 new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpMethod)
 .then(function(api){
