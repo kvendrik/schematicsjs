@@ -6,7 +6,7 @@ class Schematics {
 
     constructor(schemaUrl, httpMethod){
         if(typeof schemaUrl !== 'string' || typeof httpMethod !== 'function'){
-            this._throwError('Please provide both schema url String and a http method');
+            this._throwError('Please provide both a schema url String and a http method');
         }
 
         //use the user's http method for requests
@@ -18,11 +18,17 @@ class Schematics {
                 let details = _obj._get;
 
                 //get parsed endpoint url
-                let endpointUrl = this._parseEndpointStr(details.href, params);
+                let result = this._parseEndpointStr(details.href, params);
 
-                return http({
-                    url: endpointUrl
-                });
+                if(!result.success){
+                    return new Promise((resolve, reject) => {
+                        this._rejectPromise(reject, result);
+                    });
+                } else {
+                    return http({
+                        url: result.endpointUrl
+                    });
+                }
             },
 
             post: (params, _obj) => this._doRequestWithParams('post', params, _obj),
@@ -42,6 +48,21 @@ class Schematics {
         }
     }
 
+    _rejectPromise(rejectMethod, details){
+        let errorDetails = {
+            internal: true,
+            errorType: details.errorType,
+            message: details.message
+        };
+
+        if(details.errorType === 'TypeError'){
+            errorDetails.expectedType = details.expectedType;
+            errorDetails.gotType = details.gotType;
+        }
+
+        rejectMethod(errorDetails);
+    }
+
     _doRequestWithParams(reqName, params, _obj){
         //get endpoint details
         let details = _obj['_'+reqName],
@@ -50,16 +71,17 @@ class Schematics {
         return new Promise((resolve, reject) => {
             schemaParser.checkParamsValid(params, (result) => {
                 if(!result.valid){
-                    this._throwError(result.message);
+                    this._rejectPromise(reject, result);
+                } else {
+                    console.log(reqName, params, result);
+                    http({
+                        type: reqName,
+                        url: details.href,
+                        data: params
+                    })
+                    .then(resolve)
+                    .catch(reject);
                 }
-
-                http({
-                    type: reqName,
-                    url: details.href,
-                    data: params
-                })
-                .then(resolve)
-                .catch(reject);
             });
         });
     }
@@ -73,11 +95,20 @@ class Schematics {
 
             if(schemaType !== 'object'){
                 //not a valid schema
-                this._throwError('Thats not a valid schema. Expected type object, got type '+schemaType);
+                this._rejectPromise(reject, {
+                    errorType: 'TypeError',
+                    message: 'Thats not a valid schema. Expected type object, got type '+schemaType,
+                    expectedType: 'Object',
+                    gotType: schemaType
+                });
             }
 
-            this._storeEndpoints(schema);
-            resolve(this);
+            let details = this._storeEndpoints(schema);
+            if(!details.success){
+                this._rejectPromise(reject, details);
+            } else {
+                resolve(this);
+            }
         })
         .catch(reject);
     }
@@ -114,7 +145,13 @@ class Schematics {
                     } else {
                         //if the method is not req
                         //throw an error
-                        this._throwError('Expected an Object for method '+reqMethod+', instead found string "'+reqMethodDetails);
+                        return {
+                            success: false,
+                            errorType: 'TypeError',
+                            message: 'Expected an Object for method '+reqMethod+', instead found string "'+reqMethodDetails,
+                            expectedType: 'Object',
+                            gotType: 'String'
+                        };
                     }
                 } else {
                     //if its a normal object with at least a href property
@@ -129,6 +166,10 @@ class Schematics {
       
             this[name] = details;
         }
+
+        return {
+            success: true
+        };
     }
   
     _parseEndpointStr(endpoint, givenParams){
@@ -137,18 +178,27 @@ class Schematics {
             optionalParamNames = endpointParamNames.optional;
     
         //check if all required params are provided
-        requiredParamNames.forEach((name) => {
+        for(let i = 0, l = requiredParamNames.length; i < l; i++){
+            let name = requiredParamNames[i];
             if(typeof givenParams[name] === 'undefined'){
                 //throw error
-                this._throwError('Param "'+name+'" is required for endpoint '+endpoint);
+                return {
+                    success: false,
+                    errorType: 'Error',
+                    message: 'Param "'+name+'" is required for endpoint '+endpoint
+                };
             }
-        });
+        }
 
         //check if there aren't any params that are not needed
         for(let name in givenParams){
             if(requiredParamNames.indexOf(name) === -1 && optionalParamNames.indexOf(name) === -1){
                 //throw error
-                this._throwError('Param "'+name+'" is not not found in the schema for endpoint '+endpoint);
+                return {
+                    success: false,
+                    errorType: 'Error',
+                    message: 'Param "'+name+'" is not not found in the schema for endpoint '+endpoint
+                };
             }
         }
     
@@ -171,7 +221,10 @@ class Schematics {
             }
         });
     
-        return endpoint;
+        return {
+            success: true,
+            endpointUrl: endpoint
+        };
     }
   
     _getUrlEndpointParamNames(endpoint, params){

@@ -11,6 +11,7 @@ class SchemaParser {
   
     checkParamsValid(params, callback){
         let schema = this._schema,
+            threwError = false;
             self = this;
 
         let checkSchemaObject = function(schemaObj, paramsObj){
@@ -26,8 +27,11 @@ class SchemaParser {
                 if(typeof paramsVal === 'undefined' && schemaVal.optional !== true){
                     callback({
                         valid: false,
+                        errorType: 'Error',
                         message: 'Param "'+key+'" is required'
                     });
+                    threwError = true;
+                    return;
                 }
         
                 //if its an object and has a type option or is a string
@@ -50,8 +54,13 @@ class SchemaParser {
                         //value is invalid
                         callback({
                             valid: false,
-                            message: 'Param "'+key+'" should be of type '+validType
+                            errorType: 'TypeError',
+                            message: 'Param "'+key+'" should be of type '+validType,
+                            expectedType: validType,
+                            gotType: actualType
                         });
+                        threwError = true;
+                        return;
                     }
                 } else {
                     //if its not an object and has no type property and is not a string
@@ -63,9 +72,11 @@ class SchemaParser {
     
         checkSchemaObject(schema, params);
         
-        callback({
-            valid: true
-        });
+        if(!threwError){
+            callback({
+                valid: true
+            });
+        }
     }
 }
 

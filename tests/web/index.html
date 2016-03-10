@@ -17,11 +17,11 @@ var ajax = function(settings){
 new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', ajax)
 .then(function(api){
 
-    api.users.get({ username: 'kvendrik', limit: 5 })
+    api.users.get({ username: 'kvendrik' })
     .then((data) => console.log(data))
     .catch((err) => console.log(err));
 
-    api.events.post({ name: 'Koen' })
+    api.events.post({ name: 2 })
     .then((data) => console.log(data))
     .catch((err) => console.log(err));
 

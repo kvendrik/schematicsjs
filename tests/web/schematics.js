@@ -23,7 +23,8 @@ var SchemaParser = function () {
         key: "checkParamsValid",
         value: function checkParamsValid(params, callback) {
             var schema = this._schema,
-                self = this;
+                threwError = false;
+            self = this;
 
             var checkSchemaObject = function checkSchemaObject(schemaObj, paramsObj) {
                 //loop all properties in object
@@ -38,8 +39,11 @@ var SchemaParser = function () {
                     if (typeof paramsVal === 'undefined' && schemaVal.optional !== true) {
                         callback({
                             valid: false,
+                            errorType: 'Error',
                             message: 'Param "' + key + '" is required'
                         });
+                        threwError = true;
+                        return;
                     }
 
                     //if its an object and has a type option or is a string
@@ -62,8 +66,13 @@ var SchemaParser = function () {
                             //value is invalid
                             callback({
                                 valid: false,
-                                message: 'Param "' + key + '" should be of type ' + validType
+                                errorType: 'TypeError',
+                                message: 'Param "' + key + '" should be of type ' + validType,
+                                expectedType: validType,
+                                gotType: actualType
                             });
+                            threwError = true;
+                            return;
                         }
                     } else {
                         //if its not an object and has no type property and is not a string
@@ -75,9 +84,11 @@ var SchemaParser = function () {
 
             checkSchemaObject(schema, params);
 
-            callback({
-                valid: true
-            });
+            if (!threwError) {
+                callback({
+                    valid: true
+                });
+            }
         }
     }]);
 
@@ -101,12 +112,12 @@ var http = void 0;
 
 var Schematics = function () {
     function Schematics(schemaUrl, httpMethod) {
-        var _this = this;
+        var _this2 = this;
 
         _classCallCheck(this, Schematics);
 
         if (typeof schemaUrl !== 'string' || typeof httpMethod !== 'function') {
-            this._throwError('Please provide both schema url String and a http method');
+            this._throwError('Please provide both a schema url String and a http method');
         }
 
         //use the user's http method for requests
@@ -114,30 +125,38 @@ var Schematics = function () {
 
         this._publicsMethods = {
             get: function get(params, _obj) {
+                var _this = this;
+
                 //get endpoint details
                 var details = _obj._get;
 
                 //get parsed endpoint url
-                var endpointUrl = this._parseEndpointStr(details.href, params);
+                var result = this._parseEndpointStr(details.href, params);
 
-                return http({
-                    url: endpointUrl
-                });
+                if (!result.success) {
+                    return new Promise(function (resolve, reject) {
+                        _this._rejectPromise(reject, result);
+                    });
+                } else {
+                    return http({
+                        url: result.endpointUrl
+                    });
+                }
             },
 
             post: function post(params, _obj) {
-                return _this._doRequestWithParams('post', params, _obj);
+                return _this2._doRequestWithParams('post', params, _obj);
             },
             put: function put(params, _obj) {
-                return _this._doRequestWithParams('put', params, _obj);
+                return _this2._doRequestWithParams('put', params, _obj);
             },
             delete: function _delete(params, _obj) {
-                return _this._doRequestWithParams('delete', params, _obj);
+                return _this2._doRequestWithParams('delete', params, _obj);
             }
         };
 
         return new Promise(function (resolve, reject) {
-            return _this._getSchema(schemaUrl, resolve, reject);
+            return _this2._getSchema(schemaUrl, resolve, reject);
         });
     }
 
@@ -152,9 +171,25 @@ var Schematics = function () {
             }
         }
     }, {
+        key: '_rejectPromise',
+        value: function _rejectPromise(rejectMethod, details) {
+            var errorDetails = {
+                internal: true,
+                errorType: details.errorType,
+                message: details.message
+            };
+
+            if (details.errorType === 'TypeError') {
+                errorDetails.expectedType = details.expectedType;
+                errorDetails.gotType = details.gotType;
+            }
+
+            rejectMethod(errorDetails);
+        }
+    }, {
         key: '_doRequestWithParams',
         value: function _doRequestWithParams(reqName, params, _obj) {
-            var _this2 = this;
+            var _this3 = this;
 
             //get endpoint details
             var details = _obj['_' + reqName],
@@ -163,21 +198,22 @@ var Schematics = function () {
             return new Promise(function (resolve, reject) {
                 schemaParser.checkParamsValid(params, function (result) {
                     if (!result.valid) {
-                        _this2._throwError(result.message);
+                        _this3._rejectPromise(reject, result);
+                    } else {
+                        console.log(reqName, params, result);
+                        http({
+                            type: reqName,
+                            url: details.href,
+                            data: params
+                        }).then(resolve).catch(reject);
                     }
-
-                    http({
-                        type: reqName,
-                        url: details.href,
-                        data: params
-                    }).then(resolve).catch(reject);
                 });
             });
         }
     }, {
         key: '_getSchema',
         value: function _getSchema(schemaUrl, resolve, reject) {
-            var _this3 = this;
+            var _this4 = this;
 
             http({
                 url: schemaUrl
@@ -186,17 +222,26 @@ var Schematics = function () {
 
                 if (schemaType !== 'object') {
                     //not a valid schema
-                    _this3._throwError('Thats not a valid schema. Expected type object, got type ' + schemaType);
+                    _this4._rejectPromise(reject, {
+                        errorType: 'TypeError',
+                        message: 'Thats not a valid schema. Expected type object, got type ' + schemaType,
+                        expectedType: 'Object',
+                        gotType: schemaType
+                    });
                 }
 
-                _this3._storeEndpoints(schema);
-                resolve(_this3);
+                var details = _this4._storeEndpoints(schema);
+                if (!details.success) {
+                    _this4._rejectPromise(reject, details);
+                } else {
+                    resolve(_this4);
+                }
             }).catch(reject);
         }
     }, {
         key: '_storeEndpoints',
         value: function _storeEndpoints(endpoints) {
-            var _this4 = this;
+            var _this5 = this;
 
             var _loop = function _loop(name) {
                 var details = endpoints[name];
@@ -209,9 +254,9 @@ var Schematics = function () {
                             href = details;
                         detailsObj._get = { href: href };
                         detailsObj.get = function (params) {
-                            return _this4._publicsMethods.get.apply(_this4, [params, detailsObj]);
+                            return _this5._publicsMethods.get.apply(_this5, [params, detailsObj]);
                         };
-                        _this4[name] = detailsObj;
+                        _this5[name] = detailsObj;
                         return {
                             v: 'continue'
                         };
@@ -234,12 +279,22 @@ var Schematics = function () {
                             var href = reqMethodDetails;
                             details['_' + reqMethod] = { href: href };
                             details[reqMethod] = function (params) {
-                                return _this4._publicsMethods[reqMethod].apply(_this4, [params, details]);
+                                return _this5._publicsMethods[reqMethod].apply(_this5, [params, details]);
                             };
                         } else {
                             //if the method is not req
                             //throw an error
-                            _this4._throwError('Expected an Object for method ' + reqMethod + ', instead found string "' + reqMethodDetails);
+                            return {
+                                v: {
+                                    v: {
+                                        success: false,
+                                        errorType: 'TypeError',
+                                        message: 'Expected an Object for method ' + reqMethod + ', instead found string "' + reqMethodDetails,
+                                        expectedType: 'Object',
+                                        gotType: 'String'
+                                    }
+                                }
+                            };
                         }
                     } else {
                         //if its a normal object with at least a href property
@@ -249,47 +304,66 @@ var Schematics = function () {
 
                         //replace method in object with function to use the endpoint
                         details[reqMethod] = function (params) {
-                            return _this4._publicsMethods[reqMethod].apply(_this4, [params, details]);
+                            return _this5._publicsMethods[reqMethod].apply(_this5, [params, details]);
                         };
                     }
                 };
 
                 for (var reqMethod in details) {
-                    _loop2(reqMethod);
+                    var _ret3 = _loop2(reqMethod);
+
+                    if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
                 }
 
-                _this4[name] = details;
+                _this5[name] = details;
             };
 
             //loop endpoints
             for (var name in endpoints) {
                 var _ret = _loop(name);
 
-                if (_ret === 'continue') continue;
+                switch (_ret) {
+                    case 'continue':
+                        continue;
+
+                    default:
+                        if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+                }
             }
+
+            return {
+                success: true
+            };
         }
     }, {
         key: '_parseEndpointStr',
         value: function _parseEndpointStr(endpoint, givenParams) {
-            var _this5 = this;
-
             var endpointParamNames = this._getUrlEndpointParamNames(endpoint),
                 requiredParamNames = endpointParamNames.required,
                 optionalParamNames = endpointParamNames.optional;
 
             //check if all required params are provided
-            requiredParamNames.forEach(function (name) {
+            for (var i = 0, l = requiredParamNames.length; i < l; i++) {
+                var name = requiredParamNames[i];
                 if (typeof givenParams[name] === 'undefined') {
                     //throw error
-                    _this5._throwError('Param "' + name + '" is required for endpoint ' + endpoint);
+                    return {
+                        success: false,
+                        errorType: 'Error',
+                        message: 'Param "' + name + '" is required for endpoint ' + endpoint
+                    };
                 }
-            });
+            }
 
             //check if there aren't any params that are not needed
-            for (var name in givenParams) {
-                if (requiredParamNames.indexOf(name) === -1 && optionalParamNames.indexOf(name) === -1) {
+            for (var _name in givenParams) {
+                if (requiredParamNames.indexOf(_name) === -1 && optionalParamNames.indexOf(_name) === -1) {
                     //throw error
-                    this._throwError('Param "' + name + '" is not not found in the schema for endpoint ' + endpoint);
+                    return {
+                        success: false,
+                        errorType: 'Error',
+                        message: 'Param "' + _name + '" is not not found in the schema for endpoint ' + endpoint
+                    };
                 }
             }
 
@@ -312,7 +386,10 @@ var Schematics = function () {
                 }
             });
 
-            return endpoint;
+            return {
+                success: true,
+                endpointUrl: endpoint
+            };
         }
     }, {
         key: '_getUrlEndpointParamNames',
