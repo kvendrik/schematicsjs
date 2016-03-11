@@ -241,6 +241,9 @@ var Schematics = function () {
                 if (!details.success) {
                     _this4._rejectPromise(reject, details);
                 } else {
+                    _this4.getSchema = function () {
+                        return schema;
+                    };
                     resolve(_this4);
                 }
             }).catch(reject);

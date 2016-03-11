@@ -114,6 +114,7 @@ class Schematics {
             if(!details.success){
                 this._rejectPromise(reject, details);
             } else {
+                this.getSchema = () => schema;
                 resolve(this);
             }
         })

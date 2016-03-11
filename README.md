@@ -51,7 +51,10 @@ new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpM
     //With GET requests you can also give in an array with fields you want 
     //back from the server. The server will receive these as a GET parameter 
     //named `return_fields[]`
-    //api.users.get({ username: 'kvendrik' }, ['id', 'url'])
+    api.users.get({ username: 'kvendrik' }, ['id', 'url'])
+
+    //get the raw schema object using getSchema
+    api.getSchema()
 
 });
 ```
