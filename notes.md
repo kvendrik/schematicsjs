@@ -11,6 +11,7 @@
 * **Get Expected Type for Param?**
     * `api.article.post.getDataType('username')` -> `String`
     * Pro: know what the API expects before doing anything
-*  **[Specify what fields you want back](https://facebook.github.io/react/blog/2015/05/01/graphql-introduction.html)**
-    * `api.users.get({ id: 22191 }, ['name', 'age'])`
-    * Pro: only transfer the data we need instead of the entire blob 
+*  [Things we can learn from GraphQL](http://graphql.org/) - [Spec](http://facebook.github.io/graphql/)
+    * Be able to specify what fields the client wants back
+        * `api.users.get({ id: 22191 }, ['name', 'city.street'])`
+        * Pro: only transfer the data we need instead of the entire blob
