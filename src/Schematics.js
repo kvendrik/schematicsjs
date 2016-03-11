@@ -13,7 +13,7 @@ class Schematics {
         http = httpMethod;
 
         this._publicsMethods = {
-            get: function(params, _obj){
+            get: function(params, returnFields, _obj){
                 //get endpoint details
                 let details = _obj._get;
 
@@ -25,8 +25,16 @@ class Schematics {
                         this._rejectPromise(reject, result);
                     });
                 } else {
+                    //add returnFields if present
+                    //that way the server will know
+                    //what returnFields to return
+                    if(typeof returnFields !== 'undefined'){
+                        result.queryData.return_fields = returnFields;
+                    }
+
                     return http({
-                        url: result.endpointUrl
+                        url: result.endpointUrl,
+                        data: result.queryData
                     });
                 }
             },
@@ -73,7 +81,6 @@ class Schematics {
                 if(!result.valid){
                     this._rejectPromise(reject, result);
                 } else {
-                    console.log(reqName, params, result);
                     http({
                         type: reqName,
                         url: details.href,
@@ -124,7 +131,7 @@ class Schematics {
                 let detailsObj = {},
                     href = details;
                 detailsObj._get = { href: href };
-                detailsObj.get = (params) => this._publicsMethods.get.apply(this, [params, detailsObj]);
+                detailsObj.get = (params, returnFields) => this._publicsMethods.get.apply(this, [params, returnFields, detailsObj]);
                 this[name] = detailsObj;
                 continue;
             }
@@ -208,22 +215,24 @@ class Schematics {
             endpoint = endpoint.replace(':'+name, val);
         });
 
+        let queryData = {};
         optionalParamNames.forEach(function(name){
             let val = givenParams[name],
                 paramRegex = new RegExp('(\\?|\\&)'+name);
 
+            //add to data object, if there is a value for it
             if(typeof val !== 'undefined'){
-                //if the optional param is given, put it in the URL
-                endpoint = endpoint.replace(paramRegex, '$1'+name+'='+val);
-            } else {
-                //otherwise remove it from the url
-                endpoint = endpoint.replace(paramRegex, '');
+                queryData[name] = val;
             }
+
+            //remove query param it from the url
+            endpoint = endpoint.replace(paramRegex, '');
         });
     
         return {
             success: true,
-            endpointUrl: endpoint
+            endpointUrl: endpoint,
+            queryData: queryData
         };
     }
   

@@ -48,6 +48,11 @@ new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpM
     .then((data) => console.log(data))
     .catch((err) => console.log(err));
 
+    //With GET requests you can also give in an array with fields you want 
+    //back from the server. The server will receive these as a GET parameter 
+    //named `return_fields`
+    //api.users.get({ username: 'kvendrik' }, ['id', 'url'])
+
 });
 ```
 
@@ -72,7 +77,7 @@ A few requirements: your HTTP method should:
 * Accept a settings object with:
     * `type`: the request type e.g. `GET`
     * `url`: the URL to send the request to
-    * `data`: an object to store the request body in
+    * `data`: an object to store the request body or `GET` parameters in
 * Return a `Promise`
 
 Example

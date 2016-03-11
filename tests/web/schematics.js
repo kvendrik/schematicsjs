@@ -124,7 +124,7 @@ var Schematics = function () {
         http = httpMethod;
 
         this._publicsMethods = {
-            get: function get(params, _obj) {
+            get: function get(params, returnFields, _obj) {
                 var _this = this;
 
                 //get endpoint details
@@ -138,8 +138,16 @@ var Schematics = function () {
                         _this._rejectPromise(reject, result);
                     });
                 } else {
+                    //add returnFields if present
+                    //that way the server will know
+                    //what returnFields to return
+                    if (typeof returnFields !== 'undefined') {
+                        result.queryData.return_fields = returnFields;
+                    }
+
                     return http({
-                        url: result.endpointUrl
+                        url: result.endpointUrl,
+                        data: result.queryData
                     });
                 }
             },
@@ -200,7 +208,6 @@ var Schematics = function () {
                     if (!result.valid) {
                         _this3._rejectPromise(reject, result);
                     } else {
-                        console.log(reqName, params, result);
                         http({
                             type: reqName,
                             url: details.href,
@@ -253,8 +260,8 @@ var Schematics = function () {
                         var detailsObj = {},
                             href = details;
                         detailsObj._get = { href: href };
-                        detailsObj.get = function (params) {
-                            return _this5._publicsMethods.get.apply(_this5, [params, detailsObj]);
+                        detailsObj.get = function (params, returnFields) {
+                            return _this5._publicsMethods.get.apply(_this5, [params, returnFields, detailsObj]);
                         };
                         _this5[name] = detailsObj;
                         return {
@@ -373,22 +380,24 @@ var Schematics = function () {
                 endpoint = endpoint.replace(':' + name, val);
             });
 
+            var queryData = {};
             optionalParamNames.forEach(function (name) {
                 var val = givenParams[name],
                     paramRegex = new RegExp('(\\?|\\&)' + name);
 
+                //add to data object, if there is a value for it
                 if (typeof val !== 'undefined') {
-                    //if the optional param is given, put it in the URL
-                    endpoint = endpoint.replace(paramRegex, '$1' + name + '=' + val);
-                } else {
-                    //otherwise remove it from the url
-                    endpoint = endpoint.replace(paramRegex, '');
+                    queryData[name] = val;
                 }
+
+                //remove query param it from the url
+                endpoint = endpoint.replace(paramRegex, '');
             });
 
             return {
                 success: true,
-                endpointUrl: endpoint
+                endpointUrl: endpoint,
+                queryData: queryData
             };
         }
     }, {
