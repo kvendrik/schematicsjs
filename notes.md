@@ -2,7 +2,7 @@
 * **Schema**
     * Pro: clarity about what you can use and how
 * **GET Endpoints & URL Parameters**
-        * Pro: dynamic endpoints, back-end can change endpoint without changes necessary in the client
+    * Pro: dynamic endpoints, back-end can change endpoint without changes necessary in the client
 * **GET Schema POST/PUT/DELETE**
     * **Param names & Data type validation?**
         * Pro: saves requests
