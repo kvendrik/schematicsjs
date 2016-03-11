@@ -29,7 +29,7 @@ class Schematics {
                     //that way the server will know
                     //what returnFields to return
                     if(typeof returnFields !== 'undefined'){
-                        result.queryData.return_fields = returnFields;
+                        result.queryData['return_fields[]'] = returnFields;
                     }
 
                     return http({
