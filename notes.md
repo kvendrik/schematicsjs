@@ -1,13 +1,13 @@
 ### Notes
-* Back-end
-    * **Schema** = clarity about what you can use and how
-* **Front-end**
-    * **GET Endpoints & URL Parameters** = dynamic endpoints, back-end can change endpoint without changes necessary in the client
-    * **GET Schema POST/PUT/DELETE** = 
+    * **Schema**
+        * Pro: clarity about what you can use and how
+    * **GET Endpoints & URL Parameters**
+        * Pro: dynamic endpoints, back-end can change endpoint without changes necessary in the client
+    * **GET Schema POST/PUT/DELETE**
         * **Param names & Data type validation?**
             * Pro: saves requests
             * Con: more tasks on the client
-            * > Do we need this? why not just 
+            * > Do we need this?
         * **Get Expected Type for Param?**
             * `api.article.post.getDataType('username')` -> `String`
             * Pro: know what the API expects before doing anything
