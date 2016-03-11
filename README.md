@@ -1,5 +1,5 @@
-Schematics.js
-=============
+Schematics.js [WIP]
+===================
 #### An API communication experiment
 
 ### What is it?
