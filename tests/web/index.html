@@ -17,7 +17,7 @@ var ajax = function(settings){
 new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', ajax)
 .then(function(api){
 
-    api.users.get({ username: 'kvendrik' })
+    api.users.get({ username: 'kvendrik' }, ['id', 'url'])
     .then((data) => console.log(data))
     .catch((err) => console.log(err));
 
