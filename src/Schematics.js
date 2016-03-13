@@ -1,4 +1,4 @@
-let SchemaParser = require('./SchemaParser');
+import SchemaParser from './SchemaParser.js';
 
 let http;
 
@@ -259,4 +259,4 @@ class Schematics {
   
 };
 
-module.exports = Schematics;
+export default Schematics;

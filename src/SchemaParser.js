@@ -80,4 +80,4 @@ class SchemaParser {
     }
 }
 
-module.exports = SchemaParser;
+export default SchemaParser;
