@@ -34,6 +34,7 @@ addConfig({
 });
 addConfig({
     output: {
+        path: __dirname+'/dist',
         filename: 'schematics.min.js'
     },
     plugins: [
