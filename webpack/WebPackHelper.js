@@ -1,15 +1,15 @@
-var path = require('path');
+const path = require('path');
 
-var rootPath = path.join(__dirname, '../');
+const ROOT_PATH = path.join(__dirname, '../');
 
 var WebPackHelper = function(){
     this._configs = [];
 
     this._baseConfig = {
-        context: rootPath+'/src',
+        context: ROOT_PATH+'/src',
         entry: './index.js',
         output: {
-            path: rootPath+'/dist',
+            path: ROOT_PATH+'/dist',
             filename: 'schematics.js'
         },
         module: {
@@ -27,7 +27,7 @@ var WebPackHelper = function(){
 
 WebPackHelper.prototype = {
     getRootPath: function(){
-        return rootPath;
+        return ROOT_PATH;
     },
 
     getConfigs: function(){
