@@ -21,7 +21,8 @@ var configs = [],
     };
 
 var addConfig = function(options){
-    var config = Object.assign(baseConfig, options);
+    var baseCopy = Object.assign({}, baseConfig),
+        config = Object.assign(baseCopy, options);
     configs.push(config);
 };
 
