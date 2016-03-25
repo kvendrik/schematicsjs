@@ -75,6 +75,13 @@ new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', functi
 });
 ```
 
+Example with [Fetch](https://github.com/github/fetch)
+```javascript
+new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', function(settings){
+    return fetch(settings.url, { method: settings.type, body: JSON.stringify(settings.data) })
+});
+```
+
 #### Custom method
 A few requirements: your HTTP method should:
 * Accept a settings object with:
