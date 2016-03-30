@@ -20,3 +20,4 @@
     * Be able to specify what fields the client wants back
         * `api.users.get({ id: 22191 }, ['name', 'city.street'])`
         * Pro: only transfer the data we need instead of the entire blob
+* Working with nested schema's
