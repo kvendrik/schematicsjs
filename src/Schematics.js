@@ -87,9 +87,10 @@ class Schematics {
 
     _processGetRes(body, resolve, reject){
         //check if there is a schema
-        if(typeof data['$schema'] !== 'undefined'){
+        if(body && typeof body['$schema'] !== 'undefined'){
             //response contains a schema
-            let schemaValid = this._validateSchema(schema);
+            let schema = body['$schema'],
+                schemaValid = this._validateSchema(schema);
 
             //check if schema is valid
             if(!schemaValid){

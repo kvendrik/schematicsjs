@@ -14,8 +14,9 @@ var ajax = function(settings){
     return new Promise((resolve, reject) => $.ajax(settings).done(resolve).fail(reject));
 };
 
-new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', ajax)
-.then(function(api){
+new Schematics('http://kvendrik.github.io/schematicsjs/tests/new-schema.json', ajax)
+.then(function(res){
+    let api = res.api;
 
     api.users.get({ username: 'kvendrik' }, ['id', 'url'])
     .then((data) => console.log(data))
