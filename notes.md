@@ -23,5 +23,33 @@
 * **Working with nested schema's**
     * `api.repo.get({ id: 2891 }).then((api, schema) => api.issues.get({ status: 'open' }));`
 * **Switch to using [JSON schema's](http://json-schema.org/examples.html)?**
+* **Switch to Github Like Schema with Ability to add data to schema?**
 
+**Github Like Schema with Ability to add data to schema **
+```json
+{
+    "userId": 132,
+    "username": "mattivdweem",
+    "awesomeLevel": "over9000",
+    "$schema": {
+        "users": "https://api.github.com/users{/username}{?limit,offset}",
+        "emojis": "https://api.github.com/emojis",
+        "events": {
+            "post": {
+                "href": "https://api.github.com/events",
+                "params": {
+                    "name": "String",
+                    "date": { "type": "String", "optional": true }
+                }
+            },
+            "get": "https://api.github.com/events"
+        }
+    }
+}
+```
+```javascript
+new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpMethod)
+.then((data, schema) => schema.users.get()); //url = https://api.github.com/users
+.then((data, schema) => schema.users.get({ 'username': 'mattivdweem' })); //url = https://api.github.com/users/mattivdweem
+```
 
