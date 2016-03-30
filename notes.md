@@ -20,5 +20,8 @@
     * Be able to specify what fields the client wants back
         * `api.users.get({ id: 22191 }, ['name', 'city.street'])`
         * Pro: only transfer the data we need instead of the entire blob
-* Working with nested schema's
-* Switch to using [JSON schema's](http://json-schema.org/examples.html)?
+* **Working with nested schema's**
+    * `api.repo.get({ id: 2891 }).then((api, schema) => api.issues.get({ status: 'open' }));`
+* **Switch to using [JSON schema's](http://json-schema.org/examples.html)?**
+
+
