@@ -62,10 +62,10 @@ new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpM
     
     //and some nested schema's awesomeness
     api.repos.get({ name: 'Koen' })
-    .then(({ api, body }) => {
-        api.issues.get({ 'status': 'open' })
-        .then(({ api, body }) => console.log(body));
-    });
+        .then(({ api, body }) => {
+            api.issues.get({ 'status': 'open' })
+            .then(({ api, body }) => console.log(body));
+        });
 
 });
 ```
