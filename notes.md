@@ -25,7 +25,13 @@
 * **Switch to using [JSON schema's](http://json-schema.org/examples.html)?**
 * **Switch to Github Like Schema with Ability to add data to schema?**
 
-**Github Like Schema with Ability to add data to schema **
+
+##### Example: Github Like Schema & Add Schema to Normal Response
+
+Pros:
+* Ability to do nested schema's
+* No extra requests as the schema is shipped with the data
+
 ```json
 {
     "userId": 132,
