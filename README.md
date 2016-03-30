@@ -109,12 +109,12 @@ Some things you might find useful to know:
 
 * `GET`
     * A details object with a `href` is optional
-    * Queries can be defined with just their key e.g. `?offset&limit`
+    * Queries can be defined with just their key e.g. `{?offset,limit}`
     * Queries are always optional
-    * Parameters can be defined using `:` e.g. `/:username`
-    * Parameters are always required
+    * Optional URL Parameters can be defined using brackets and a theirfor optional slash e.g. `{/username}`
+    * Required URL Parameters can be defined using brackets e.g. `{username}`
 * `POST`, `PUT` & `DELETE`
-    * These all require a details object
+    * These all require a schema object
     * This should contain a `href` String and a `params` Object
     * Params
         * An object with the properties that should go into the request body
