@@ -45,7 +45,7 @@ new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpM
 .then(function({ api, body }){
 
     api.users.get({ username: 'kvendrik', limit: 5 })
-    .then((data) => console.log(data))
+    .then(({ api, body }) => console.log(body))
     .catch((err) => console.log(err));
 
     api.events.post({ name: 'Koen' })
@@ -59,6 +59,13 @@ new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpM
 
     //get the raw schema object using getSchema
     api.getSchema()
+    
+    //and some nested schema's awesomeness
+    api.repos.get({ name: 'Koen' })
+    .then(({ api, body }) => {
+        api.issues.get({ 'status': 'open' })
+        .then(({ api, body }) => console.log(body));
+    });
 
 });
 ```
