@@ -11,20 +11,24 @@ Check out the [Web](https://github.com/kvendrik/schematicsjs/blob/gh-pages/tests
 ### Usage
 
 #### #1 Schema
-The first step is creating a schema which lays out what endpoints your API has and how to use them.
+The first step is creating a schema which lays out what endpoints your API has and how to use them. You can use these schema's to navigate through your API. 
+
+Basically every property in a `GET` response body named `$schema` is recognized as a schema so that you can send them along with your usual responses.
 ```json
 {
-    "users": "https://api.github.com/users/:username?limit&offset",
-    "emojis": "https://api.github.com/emojis",
-    "events": {
-        "post": {
-            "href": "https://api.github.com/events",
-            "params": {
-                "name": "String",
-                "date": { "type": "String", "optional": true }
-            }
-        },
-        "get": "https://api.github.com/events"
+    "$schema": {
+        "users": "https://api.github.com/users{/username}{?limit,offset}",
+        "emojis": "https://api.github.com/emojis",
+        "events": {
+            "post": {
+                "href": "https://api.github.com/events",
+                "params": {
+                    "name": "String",
+                    "date": { "type": "String", "optional": true }
+                }
+            },
+            "get": "https://api.github.com/events"
+        }
     }
 }
 ```
@@ -38,7 +42,7 @@ Grab the library:
 Perfect! Now give the library the URL to your schema and your [HTTP method](#your-http-method) and start hacking. :)
 ```javascript
 new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpMethod)
-.then(function(api){
+.then(function({ api, body }){
 
     api.users.get({ username: 'kvendrik', limit: 5 })
     .then((data) => console.log(data))
