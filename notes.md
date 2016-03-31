@@ -24,7 +24,7 @@
     * `api.repo.get({ id: 2891 }).then((api, schema) => api.issues.get({ status: 'open' }));`
 * **Switch to using [JSON schema's](http://json-schema.org/examples.html)?**
 * **Switch to Github Like Schema with Ability to add data to schema?**
-
+* **API Design Resource: [JSON Style Guide](https://google.github.io/styleguide/jsoncstyleguide.xml)**
 
 ##### Example: Github Like Schema & Add Schema to Normal Response
 
