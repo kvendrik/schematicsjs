@@ -6,7 +6,7 @@ Schematics.js [WIP]
 The idea behind Schematics is to keep everything API in the API and provide the front-end with all the information it needs to know what the API wants. This in oppose to traditional ways in which there is basically initially no real communication between server and client on what the client can expect.
 
 ### Examples
-Check out the [Web](https://github.com/kvendrik/schematicsjs/blob/gh-pages/tests/web/index.html) and [Node.js](https://github.com/kvendrik/schematicsjs/blob/feature/package-managers-support/tests/node/index.js) examples.
+Check out the [Web](https://github.com/kvendrik/schematicsjs/blob/gh-pages/examples/web/index.html) and [Node.js](https://github.com/kvendrik/schematicsjs/blob/feature/package-managers-support/examples/node/index.js) examples.
 
 ### Usage
 
@@ -28,7 +28,8 @@ Basically every property in a `GET` response body named `$schema` is recognized 
                 }
             },
             "get": "https://api.github.com/events"
-        }
+        },
+        "repos": "http://kvendrik.github.io/schematicsjs/examples/schema-repos.json"
     }
 }
 ```
@@ -41,7 +42,7 @@ Grab the library:
 
 Perfect! Now give the library the URL to your schema and your [HTTP method](#your-http-method) and start hacking. :)
 ```javascript
-new Schematics('http://kvendrik.github.io/schematicsjs/tests/schema.json', httpMethod)
+new Schematics('http://kvendrik.github.io/schematicsjs/examples/schema.json', httpMethod)
 .then(function({ api, body }){
 
     api.users.get({ username: 'kvendrik', limit: 5 })
@@ -73,7 +74,7 @@ You might be able to simply use your framework's HTTP method. Using for example 
 
 Example with jQuery
 ```javascript
-new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', function(settings){
+new Schematics('https://api.someurl.com', function(settings){
     //use a native JavaScript promise instead of jQuery's version
     return new Promise((resolve, reject) => $.ajax(settings).done(resolve).fail(reject));
 });
@@ -81,7 +82,7 @@ new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', functi
 
 Example with [Fetch](https://github.com/github/fetch)
 ```javascript
-new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', function(settings){
+new Schematics('https://api.someurl.com', function(settings){
     return fetch(settings.url, { method: settings.type, body: JSON.stringify(settings.data) })
 });
 ```
@@ -96,7 +97,7 @@ A few requirements: your HTTP method should:
 
 Example
 ```javascript
-new Schematics('http://kvendrik.github.io/schematicsjs/test/schema.json', function(settings){
+new Schematics('https://api.someurl.com', function(settings){
     let doRequest = function(resolve, reject){
         //do request based on settings
     };

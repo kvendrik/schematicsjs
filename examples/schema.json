@@ -12,6 +12,6 @@
             },
             "get": "https://api.github.com/events"
         },
-        "repos": "http://kvendrik.github.io/schematicsjs/tests/schema-repos.json"
+        "repos": "http://kvendrik.github.io/schematicsjs/examples/schema-repos.json"
     }
 }
