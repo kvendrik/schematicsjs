@@ -6,7 +6,7 @@ Schematics.js [WIP]
 The idea behind Schematics is to keep everything API in the API and provide the front-end with all the information it needs to know what the API wants. This in oppose to traditional ways in which there is basically initially no real communication between server and client on what the client can expect.
 
 ### Examples
-Check out the [Web](https://github.com/kvendrik/schematicsjs/blob/gh-pages/examples/web/index.html) and [Node.js](https://github.com/kvendrik/schematicsjs/blob/feature/package-managers-support/examples/node/index.js) examples.
+Check out the [Web](https://github.com/kvendrik/schematicsjs/blob/gh-pages/examples/web/index.html) and [Node.js](https://github.com/kvendrik/schematicsjs/blob/gh-pages/examples/node/index.js) examples.
 
 ### Usage
 
