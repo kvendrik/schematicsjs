@@ -5,7 +5,7 @@ const webpack = require('webpack'),
 helper.addConfig({});
 helper.addConfig({
     output: {
-        path: helper.getRootPath()+'/tests/web',
+        path: helper.getRootPath()+'/examples/web',
         filename: 'schematics.js'
     }
 });

@@ -1,7 +1,6 @@
 class SchemaParser {
     constructor(schema){
         this._schema = schema;
-        this._typeOptions = ["String", "Number", "Date", "Array", "Object", "Boolean"];
     }
 
     _getValueType(value){

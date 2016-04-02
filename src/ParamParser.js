@@ -1,6 +1,6 @@
 class ParamParser {
   
-    parseEndpointStr(schemaEndpoint, givenParams){
+    parseEndpointStr(schemaEndpoint, givenParams = {}){
         let paramNames = this._getUrlEndpointParamNames(schemaEndpoint),
             paramsValid = this._validateParams(schemaEndpoint, givenParams, paramNames);
 

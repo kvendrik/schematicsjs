@@ -14,16 +14,15 @@ var ajax = function(settings){
     return new Promise((resolve, reject) => $.ajax(settings).done(resolve).fail(reject));
 };
 
-new Schematics('http://kvendrik.github.io/schematicsjs/tests/new-schema.json', ajax)
+new Schematics('http://kvendrik.github.io/schematicsjs/examples/schema.json', ajax)
 .then(function({ api, body }){
 
-    api.users.get({ username: 'kvendrik' }, ['id', 'url'])
-    .then((data) => console.log(data))
-    .catch((err) => console.log(err));
-
-    api.events.post({ name: 'Koen' })
-    .then((data) => console.log(data))
-    .catch((err) => console.log(err));
+    api.repos.get()
+    .then(({ body, api }) => {
+        api.issues.get({ repoName: body.data[0].name })
+            .then(({ body: issues }) => console.log(issues))
+            .catch((err) => console.log(err));
+    });
 
 });
 </script>
