@@ -1,0 +1,15 @@
+{
+    "data": [
+        {
+            "id": 24560307,
+            "name": "babel",
+            "fullName": "babel/babel",
+            "private": false,
+            "htmlUrl": "https://github.com/babel/babel",
+            "description": "Babel is a compiler for writing next generation JavaScript."
+        }
+    ],
+    "$schema": {
+        "issues": "https://api.github.com/repos/babel/{repoName}/issues{/id}"
+    }
+}

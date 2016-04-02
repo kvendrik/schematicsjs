@@ -1,0 +1,17 @@
+{
+    "$schema": {
+        "users": "https://api.github.com/users{/username}{?limit,offset}",
+        "emojis": "https://api.github.com/emojis",
+        "events": {
+            "post": {
+                "href": "https://api.github.com/events",
+                "params": {
+                    "name": "String",
+                    "date": { "type": "String", "optional": true }
+                }
+            },
+            "get": "https://api.github.com/events"
+        },
+        "repos": "http://kvendrik.github.io/schematicsjs/tests/schema-repos.json"
+    }
+}
