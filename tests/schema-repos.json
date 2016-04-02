@@ -10,6 +10,6 @@
         }
     ],
     "$schema": {
-        "issues": "https://api.github.com/repos/babel/{repoName}/issues{/id}",
+        "issues": "https://api.github.com/repos/babel/{repoName}/issues{/id}"
     }
 }
