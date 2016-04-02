@@ -50,16 +50,22 @@ new Schematics('http://kvendrik.github.io/schematicsjs/examples/schema.json', ht
     .catch((err) => console.log(err));
 
     api.events.post({ name: 'Koen' })
-    .then((data) => console.log(data))
-    .catch((err) => console.log(err));
+    .then((data) => console.log(data));
 
     //With GET requests you can also give in an array with fields you want 
     //back from the server. The server will receive these as a GET parameter 
     //named `return_fields[]`
-    api.users.get({ username: 'kvendrik' }, ['id', 'url'])
+    api.users.get({ username: 'kvendrik' }, ['id', 'url']);
 
     //get the raw schema object using getSchema
-    api.getSchema()
+    api.getSchema();
+
+    //and some nested schemas awesomeness
+    api.repos.get()
+    .then(({ api, body }) => {
+        api.issues.get({ repoName: body.data[0].name })
+            .then(({ body: issues }) => console.log(issues));
+    });
 
 });
 ```
