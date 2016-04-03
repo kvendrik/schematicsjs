@@ -112,7 +112,7 @@ new Schematics('https://api.someurl.com', function(settings){
 ```
 
 ### Get Initial Schema Method
-Instead of a URL to get your initial schema you can also pass in a method to get it. This is basically the callback to a promise which should be resolved with a json object containing a `$schema` property.
+Instead of a URL to get your initial schema you can also pass in a method to get it. This is basically the callback to a promise which should be resolved with a json object containing a `$schema` object.
 
 Example
 ```javascript
@@ -126,7 +126,7 @@ new Schematics((resolve, reject) => {
 .then(({ api, body }) => console.log(api, body));
 ```
 
-This can be very useful as it can save you the extra initial request to get the schema. This because most APIs require an initial request to authenticate with the API. Say you would have your API return the schema in the response on that endpoint you could save your users the extra get schema request.
+Say you would have your API return the schema in the response on your API authentication endpoint you could save your users the extra get schema request.
 
 Example
 ```javascript
