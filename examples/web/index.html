@@ -20,11 +20,20 @@ new Schematics('http://kvendrik.github.io/schematicsjs/examples/schema.json', aj
     api.repos.get()
     .then(({ body, api }) => {
         api.issues.get({ repoName: body.data[0].name })
-            .then(({ body: issues }) => console.log(issues))
+            .then(({ body: issues }) => console.log('ISSUES', issues))
             .catch((err) => console.log(err));
     });
 
 });
+
+new Schematics((resolve, reject) => {
+    resolve({
+        $schema: {
+            repos: "http://kvendrik.github.io/schematicsjs/examples/schema-repos.json"
+        }
+    });
+}, ajax)
+.then(({ api, body }) => console.log(api, body));
 </script>
 
 </body>

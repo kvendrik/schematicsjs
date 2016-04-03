@@ -3,9 +3,9 @@ import ParamParser from './ParamParser';
 
 class Schematics {
 
-    constructor(schemaUrl, httpMethod){
-        if(typeof schemaUrl !== 'string' || typeof httpMethod !== 'function'){
-            this._throwError('Please provide both a schema url String and a http method');
+    constructor(schemaUrlOrGetMethod, httpMethod){
+        if((typeof schemaUrlOrGetMethod !== 'string' && typeof schemaUrlOrGetMethod !== 'function') || typeof httpMethod !== 'function'){
+            this._throwError('Please provide both a schema url or get method and a http method');
             return;
         }
 
@@ -50,15 +50,27 @@ class Schematics {
             delete: (params, _obj) => this._doRequestWithParams('delete', params, _obj)
         };
 
-        //request initial endpoint schema
-        //which should contain a valid schema
-        return new Promise((resolve, reject) => {
-            self._http({
-                url: schemaUrl
-            })
-            .then((body) => this._processGetRes(body, resolve, reject))
-            .catch(reject);
-        });
+        if(typeof schemaUrlOrGetMethod === 'function'){
+            //if schemaUrlOrGetMethod is a function
+            //use it to get the intial schema
+            return new Promise((resolve, reject) => {
+                new Promise((resolve, reject) => {
+                    schemaUrlOrGetMethod(resolve, reject, httpMethod);
+                })
+                .then((body) => this._processGetRes(body, resolve, reject))
+                .catch(reject);
+            });
+        } else {
+            //request initial endpoint schema
+            //which should contain a valid schema
+            return new Promise((resolve, reject) => {
+                self._http({
+                    url: schemaUrlOrGetMethod
+                })
+                .then((body) => this._processGetRes(body, resolve, reject))
+                .catch(reject);
+            });
+        }
     }
 
     _throwError(msg){

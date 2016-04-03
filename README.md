@@ -40,7 +40,7 @@ Grab the library:
 * `bower i schematicsjs --save`
 * Grab the source from the `dist/` folder
 
-Perfect! Now give the library the URL to your schema and your [HTTP method](#your-http-method) and start hacking. :)
+Perfect! Now give the library the URL to your intial schema ([or a method to get it](#get-initial-schema-method)) and your [HTTP method](#your-http-method) and start hacking. :)
 ```javascript
 new Schematics('http://kvendrik.github.io/schematicsjs/examples/schema.json', httpMethod)
 .then(function({ api, body }){
@@ -109,6 +109,40 @@ new Schematics('https://api.someurl.com', function(settings){
     };
     return new Promise(doRequest);
 });
+```
+
+### Get Initial Schema Method
+Instead of a URL to get your initial schema you can also pass in a method to get it. This is basically the callback to a promise which should be resolved with a json object containing a `$schema` property.
+
+Example
+```javascript
+new Schematics((resolve, reject) => {
+    resolve({
+        $schema: {
+            users: "https://api.github.com/users"
+        }
+    });
+}, httpMethod)
+.then(({ api, body }) => console.log(api, body));
+```
+
+This can be very useful as it can save you the extra initial request to get the schema. This because most APIs require an initial request to authenticate with the API. Say you would have your API return the schema in the response on that endpoint you could save your users the extra get schema request.
+
+Example
+```javascript
+new Schematics((resolve, reject, http) => {
+    http({
+        url: 'https://api.someurl.com/authorize',
+        type: 'POST',
+        data: {
+            username: 'xxx',
+            password: 'xxx'
+        }
+    })
+    .then(resolve)
+    .catch(reject);
+}, httpMethod)
+.then(({ api, body }) => console.log(api, body));
 ```
 
 ### Schema Syntax
