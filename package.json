@@ -1,6 +1,6 @@
 {
   "name": "schematicsjs",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An API communication experiment",
   "main": "src/index.js",
   "scripts": {
