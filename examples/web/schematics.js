@@ -80,24 +80,31 @@
 
 	var _SchemaParser2 = _interopRequireDefault(_SchemaParser);
 
+	var _ParamParser = __webpack_require__(3);
+
+	var _ParamParser2 = _interopRequireDefault(_ParamParser);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var http = void 0;
-
 	var Schematics = function () {
-	    function Schematics(schemaUrl, httpMethod) {
+	    function Schematics(schemaUrlOrGetMethod, httpMethod) {
 	        var _this2 = this;
 
 	        _classCallCheck(this, Schematics);
 
-	        if (typeof schemaUrl !== 'string' || typeof httpMethod !== 'function') {
-	            this._throwError('Please provide both a schema url String and a http method');
+	        if (typeof schemaUrlOrGetMethod !== 'string' && typeof schemaUrlOrGetMethod !== 'function' || typeof httpMethod !== 'function') {
+	            this._throwError('Please provide both a schema url or get method and a http method');
+	            return;
 	        }
 
+	        //init param parser
+	        var paramParser = new _ParamParser2.default(),
+	            self = this;
+
 	        //use the user's http method for requests
-	        http = httpMethod;
+	        this._http = httpMethod;
 
 	        this._publicsMethods = {
 	            get: function get(params, returnFields, _obj) {
@@ -107,11 +114,11 @@
 	                var details = _obj._get;
 
 	                //get parsed endpoint url
-	                var result = this._parseEndpointStr(details.href, params);
+	                var result = paramParser.parseEndpointStr(details.href, params);
 
-	                if (!result.success) {
+	                if (!result || !result.success) {
 	                    return new Promise(function (resolve, reject) {
-	                        _this._rejectPromise(reject, result);
+	                        return _this._rejectPromise(reject, result);
 	                    });
 	                } else {
 	                    //add returnFields if present
@@ -121,9 +128,13 @@
 	                        result.queryData['return_fields[]'] = returnFields;
 	                    }
 
-	                    return http({
-	                        url: result.endpointUrl,
-	                        data: result.queryData
+	                    return new Promise(function (resolve, reject) {
+	                        self._http({
+	                            url: result.endpointUrl,
+	                            data: result.queryData
+	                        }).then(function (body) {
+	                            return _this._processGetRes(body, resolve, reject);
+	                        }).catch(reject);
 	                    });
 	                }
 	            },
@@ -139,9 +150,27 @@
 	            }
 	        };
 
-	        return new Promise(function (resolve, reject) {
-	            return _this2._getSchema(schemaUrl, resolve, reject);
-	        });
+	        if (typeof schemaUrlOrGetMethod === 'function') {
+	            //if schemaUrlOrGetMethod is a function
+	            //use it to get the intial schema
+	            return new Promise(function (resolve, reject) {
+	                new Promise(function (resolve, reject) {
+	                    schemaUrlOrGetMethod(resolve, reject, httpMethod);
+	                }).then(function (body) {
+	                    return _this2._processGetRes(body, resolve, reject);
+	                }).catch(reject);
+	            });
+	        } else {
+	            //request initial endpoint schema
+	            //which should contain a valid schema
+	            return new Promise(function (resolve, reject) {
+	                self._http({
+	                    url: schemaUrlOrGetMethod
+	                }).then(function (body) {
+	                    return _this2._processGetRes(body, resolve, reject);
+	                }).catch(reject);
+	            });
+	        }
 	    }
 
 	    _createClass(Schematics, [{
@@ -171,6 +200,37 @@
 	            rejectMethod(errorDetails);
 	        }
 	    }, {
+	        key: '_processGetRes',
+	        value: function _processGetRes(body, resolve, reject) {
+	            //check if there is a schema
+	            if (body && typeof body['$schema'] !== 'undefined') {
+	                //response contains a schema
+	                var schema = body['$schema'],
+	                    schemaValid = this._validateSchema(schema);
+
+	                //check if schema is valid
+	                if (!schemaValid) {
+	                    this._rejectPromise(reject, schemaValid.error);
+	                } else {
+	                    //if schema is valid
+	                    //get api object
+	                    var apiObject = this._constructAPIObject(schema);
+	                    if (!apiObject) {
+	                        this._rejectPromise(reject, details);
+	                    } else {
+	                        resolve({
+	                            api: apiObject,
+	                            body: body
+	                        });
+	                    }
+	                }
+	            } else {
+	                resolve({
+	                    body: body
+	                });
+	            }
+	        }
+	    }, {
 	        key: '_doRequestWithParams',
 	        value: function _doRequestWithParams(reqName, params, _obj) {
 	            var _this3 = this;
@@ -184,7 +244,7 @@
 	                    if (!result.valid) {
 	                        _this3._rejectPromise(reject, result);
 	                    } else {
-	                        http({
+	                        _this3._http({
 	                            type: reqName,
 	                            url: details.href,
 	                            data: params
@@ -194,43 +254,40 @@
 	            });
 	        }
 	    }, {
-	        key: '_getSchema',
-	        value: function _getSchema(schemaUrl, resolve, reject) {
-	            var _this4 = this;
+	        key: '_validateSchema',
+	        value: function _validateSchema(schema) {
+	            var schemaType = typeof schema === 'undefined' ? 'undefined' : _typeof(schema);
 
-	            http({
-	                url: schemaUrl
-	            }).then(function (schema) {
-	                var schemaType = typeof schema === 'undefined' ? 'undefined' : _typeof(schema);
-
-	                if (schemaType !== 'object') {
-	                    //not a valid schema
-	                    _this4._rejectPromise(reject, {
+	            if (schemaType !== 'object') {
+	                //not a valid schema
+	                return {
+	                    success: false,
+	                    error: {
 	                        errorType: 'TypeError',
 	                        message: 'Thats not a valid schema. Expected type object, got type ' + schemaType,
 	                        expectedType: 'Object',
 	                        gotType: schemaType
-	                    });
-	                }
-
-	                var details = _this4._storeEndpoints(schema);
-	                if (!details.success) {
-	                    _this4._rejectPromise(reject, details);
-	                } else {
-	                    _this4.getSchema = function () {
-	                        return schema;
-	                    };
-	                    resolve(_this4);
-	                }
-	            }).catch(reject);
+	                    }
+	                };
+	            } else {
+	                return true;
+	            }
 	        }
 	    }, {
-	        key: '_storeEndpoints',
-	        value: function _storeEndpoints(endpoints) {
-	            var _this5 = this;
+	        key: '_constructAPIObject',
+	        value: function _constructAPIObject(schema) {
+	            var _this4 = this;
+
+	            var apiObject = {
+	                getSchema: function getSchema() {
+	                    return schema;
+	                }
+	            };
+
+	            //loop endpoints
 
 	            var _loop = function _loop(name) {
-	                var details = endpoints[name];
+	                var details = schema[name];
 
 	                //if details is a string
 	                //the method is GET and the string is the href
@@ -240,9 +297,9 @@
 	                            href = details;
 	                        detailsObj._get = { href: href };
 	                        detailsObj.get = function (params, returnFields) {
-	                            return _this5._publicsMethods.get.apply(_this5, [params, returnFields, detailsObj]);
+	                            return _this4._publicsMethods.get.apply(_this4, [params, returnFields, detailsObj]);
 	                        };
-	                        _this5[name] = detailsObj;
+	                        apiObject[name] = detailsObj;
 	                        return {
 	                            v: 'continue'
 	                        };
@@ -265,7 +322,7 @@
 	                            var _href = reqMethodDetails;
 	                            details['_' + reqMethod] = { href: _href };
 	                            details[reqMethod] = function (params) {
-	                                return _this5._publicsMethods[reqMethod].apply(_this5, [params, details]);
+	                                return _this4._publicsMethods[reqMethod].apply(_this4, [params, details]);
 	                            };
 	                        } else {
 	                            //if the method is not req
@@ -290,7 +347,7 @@
 
 	                        //replace method in object with function to use the endpoint
 	                        details[reqMethod] = function (params) {
-	                            return _this5._publicsMethods[reqMethod].apply(_this5, [params, details]);
+	                            return _this4._publicsMethods[reqMethod].apply(_this4, [params, details]);
 	                        };
 	                    }
 	                };
@@ -301,11 +358,10 @@
 	                    if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
 	                }
 
-	                _this5[name] = details;
+	                apiObject[name] = details;
 	            };
 
-	            //loop endpoints
-	            for (var name in endpoints) {
+	            for (var name in schema) {
 	                var _ret = _loop(name);
 
 	                switch (_ret) {
@@ -317,88 +373,7 @@
 	                }
 	            }
 
-	            return {
-	                success: true
-	            };
-	        }
-	    }, {
-	        key: '_parseEndpointStr',
-	        value: function _parseEndpointStr(endpoint, givenParams) {
-	            var endpointParamNames = this._getUrlEndpointParamNames(endpoint),
-	                requiredParamNames = endpointParamNames.required,
-	                optionalParamNames = endpointParamNames.optional;
-
-	            //check if all required params are provided
-	            for (var i = 0, l = requiredParamNames.length; i < l; i++) {
-	                var name = requiredParamNames[i];
-	                if (typeof givenParams[name] === 'undefined') {
-	                    //throw error
-	                    return {
-	                        success: false,
-	                        errorType: 'Error',
-	                        message: 'Param "' + name + '" is required for endpoint ' + endpoint
-	                    };
-	                }
-	            }
-
-	            //check if there aren't any params that are not needed
-	            for (var _name in givenParams) {
-	                if (requiredParamNames.indexOf(_name) === -1 && optionalParamNames.indexOf(_name) === -1) {
-	                    //throw error
-	                    return {
-	                        success: false,
-	                        errorType: 'Error',
-	                        message: 'Param "' + _name + '" is not not found in the schema for endpoint ' + endpoint
-	                    };
-	                }
-	            }
-
-	            //parse endpoint URL
-	            requiredParamNames.forEach(function (name) {
-	                var val = givenParams[name];
-	                endpoint = endpoint.replace(':' + name, val);
-	            });
-
-	            var queryData = {};
-	            optionalParamNames.forEach(function (name) {
-	                var val = givenParams[name],
-	                    paramRegex = new RegExp('(\\?|\\&)' + name);
-
-	                //add to data object, if there is a value for it
-	                if (typeof val !== 'undefined') {
-	                    queryData[name] = val;
-	                }
-
-	                //remove query param it from the url
-	                endpoint = endpoint.replace(paramRegex, '');
-	            });
-
-	            return {
-	                success: true,
-	                endpointUrl: endpoint,
-	                queryData: queryData
-	            };
-	        }
-	    }, {
-	        key: '_getUrlEndpointParamNames',
-	        value: function _getUrlEndpointParamNames(endpoint, params) {
-	            var cleanEndpoint = endpoint.replace(/http(s)?\:\/\//, ''),
-	                matches = [],
-	                requiredParamMatches = endpoint.match(/\:([^\/\:\?]+)/g) || [],
-	                optionalParamMatches = endpoint.match(/(\?|\&)([^\&]+)/g) || [];
-
-	            requiredParamMatches = requiredParamMatches.map(function (match) {
-	                return match.replace(/\:/g, '');
-	            });
-
-	            optionalParamMatches = optionalParamMatches.map(function (match) {
-	                return match.replace(/\&|\?/g, '');
-	            });
-
-	            return {
-	                required: requiredParamMatches,
-	                optional: optionalParamMatches
-	            };
+	            return apiObject;
 	        }
 	    }]);
 
@@ -413,7 +388,7 @@
 /* 2 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -428,17 +403,16 @@
 	        _classCallCheck(this, SchemaParser);
 
 	        this._schema = schema;
-	        this._typeOptions = ["String", "Number", "Date", "Array", "Object", "Boolean"];
 	    }
 
 	    _createClass(SchemaParser, [{
-	        key: "_getValueType",
+	        key: '_getValueType',
 	        value: function _getValueType(value) {
 	            var type = {}.toString.call(value);
 	            return type.match(/\s(\w+)/)[1];
 	        }
 	    }, {
-	        key: "checkParamsValid",
+	        key: 'checkParamsValid',
 	        value: function checkParamsValid(params, callback) {
 	            var schema = this._schema,
 	                threwError = false;
@@ -514,6 +488,200 @@
 	}();
 
 	exports.default = SchemaParser;
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var ParamParser = function () {
+	    function ParamParser() {
+	        _classCallCheck(this, ParamParser);
+	    }
+
+	    _createClass(ParamParser, [{
+	        key: 'parseEndpointStr',
+	        value: function parseEndpointStr(schemaEndpoint) {
+	            var givenParams = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	            var paramNames = this._getUrlEndpointParamNames(schemaEndpoint),
+	                paramsValid = this._validateParams(schemaEndpoint, givenParams, paramNames);
+
+	            if (!paramsValid.success) {
+	                //if not success
+	                //return results directly
+	                return paramsValid;
+	            }
+
+	            var _parseEndpointUrl2 = this._parseEndpointUrl(schemaEndpoint, givenParams, paramNames);
+
+	            var endpointUrl = _parseEndpointUrl2.endpointUrl;
+	            var queryData = _parseEndpointUrl2.queryData;
+
+
+	            return {
+	                success: true,
+	                endpointUrl: endpointUrl,
+	                queryData: queryData
+	            };
+	        }
+	    }, {
+	        key: '_parseEndpointUrl',
+	        value: function _parseEndpointUrl(schemaEndpoint, givenParams, _ref) {
+	            var url = _ref.url;
+	            var query = _ref.query;
+
+	            var endpoint = schemaEndpoint;
+
+	            //replace all required params {param}
+	            url.required.forEach(function (name) {
+	                var val = givenParams[name];
+	                endpoint = endpoint.replace('{' + name + '}', val);
+	            });
+
+	            //replace all optional params {/param}
+	            url.optional.forEach(function (name) {
+	                var val = givenParams[name];
+	                if (typeof val !== 'undefined') {
+	                    endpoint = endpoint.replace('{/' + name + '}', '/' + val);
+	                } else {
+	                    endpoint = endpoint.replace('{/' + name + '}', '');
+	                }
+	            });
+
+	            //get all optional query properties
+	            //and if defined add them to the queryData
+	            //object
+	            var queryData = {};
+	            query.optional.forEach(function (name) {
+	                var val = givenParams[name],
+	                    paramRegex = new RegExp('\{?(\\?|\\,)' + name + '\}?');
+
+	                //add to data object, if there is a value for it
+	                if (typeof val !== 'undefined') {
+	                    queryData[name] = val;
+	                }
+
+	                //remove query param it from the url
+	                endpoint = endpoint.replace(paramRegex, '');
+	            });
+
+	            return {
+	                endpointUrl: endpoint,
+	                queryData: queryData
+	            };
+	        }
+	    }, {
+	        key: '_validateParams',
+	        value: function _validateParams(schemaEndpoint, givenParams, _ref2) {
+	            var url = _ref2.url;
+	            var query = _ref2.query;
+
+
+	            //check if all required params are provided
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = url.required[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    name = _step.value;
+
+	                    if (typeof givenParams[name] === 'undefined') {
+	                        //throw error
+	                        return {
+	                            success: false,
+	                            errorType: 'Error',
+	                            message: 'Param "' + name + '" is required for endpoint ' + schemaEndpoint
+	                        };
+	                    }
+	                }
+
+	                //check if there aren't any params that are not needed
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+
+	            for (var _name in givenParams) {
+	                if (url.required.indexOf(_name) === -1 && url.optional.indexOf(_name) === -1 && query.optional.indexOf(_name) === -1) {
+	                    //throw error
+	                    return {
+	                        success: false,
+	                        errorType: 'Error',
+	                        message: 'Param "' + _name + '" is not not found in the schema for endpoint ' + schemaEndpoint
+	                    };
+	                }
+	            }
+
+	            return {
+	                success: true
+	            };
+	        }
+	    }, {
+	        key: '_getUrlEndpointParamNames',
+	        value: function _getUrlEndpointParamNames(endpoint) {
+	            //get clean endpoint without protocol
+	            var cleanEndpoint = endpoint.replace(/http(s)?\:\/\//, ''),
+	                matches = [];
+
+	            //match url and query params
+	            var requiredUrlParamMatches = endpoint.match(/\/\{([^\/\:\?]+)\}/g) || [],
+	                optionalUrlParamMatches = endpoint.match(/\{\/([^\{\}\?]+)\}/g) || [],
+	                optionalQueryParamMatches = endpoint.match(/(\?|\,)([^\,\}]+)/g) || [];
+
+	            var cleanUrlParam = function cleanUrlParam(str) {
+	                //remove brackets and first slash in case
+	                //its an optional url param
+	                return str.replace(/\{|\}/g, '').replace('/', '');
+	            };
+
+	            //clean url params
+	            requiredUrlParamMatches = requiredUrlParamMatches.map(cleanUrlParam);
+	            optionalUrlParamMatches = optionalUrlParamMatches.map(cleanUrlParam);
+
+	            //get query param names
+	            optionalQueryParamMatches = optionalQueryParamMatches.map(function (match) {
+	                return match.replace(/\,|\?/g, '');
+	            });
+
+	            return {
+	                url: {
+	                    required: requiredUrlParamMatches,
+	                    optional: optionalUrlParamMatches
+	                },
+	                query: {
+	                    optional: optionalQueryParamMatches
+	                }
+	            };
+	        }
+	    }]);
+
+	    return ParamParser;
+	}();
+
+	;
+
+	exports.default = ParamParser;
 
 /***/ }
 /******/ ]);
