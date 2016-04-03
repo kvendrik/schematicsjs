@@ -1,5 +1,5 @@
-var Schematics = require('schematicsjs'),
-    request = require('request');
+import Schematics from 'schematicsjs';
+import request from 'request';
 
 let httpMethod = function(settings){
     let doRequest = function(resolve, reject){
@@ -29,7 +29,7 @@ let httpMethod = function(settings){
 };
 
 new Schematics('http://kvendrik.github.io/schematicsjs/examples/schema.json', httpMethod)
-.then(function(api){
+.then(function({ api, body }){
 
     api.users.get({ username: 'kvendrik', limit: 5 })
     .then((data) => console.log(data))

@@ -64,7 +64,7 @@ class Schematics {
             //request initial endpoint schema
             //which should contain a valid schema
             return new Promise((resolve, reject) => {
-                self._http({
+                this._http({
                     url: schemaUrlOrGetMethod
                 })
                 .then((body) => this._processGetRes(body, resolve, reject))

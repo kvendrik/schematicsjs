@@ -164,7 +164,7 @@
 	            //request initial endpoint schema
 	            //which should contain a valid schema
 	            return new Promise(function (resolve, reject) {
-	                self._http({
+	                _this2._http({
 	                    url: schemaUrlOrGetMethod
 	                }).then(function (body) {
 	                    return _this2._processGetRes(body, resolve, reject);
