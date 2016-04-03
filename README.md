@@ -11,7 +11,7 @@ Check out the [Web](https://github.com/kvendrik/schematicsjs/blob/gh-pages/examp
 ### Usage
 
 #### #1 Schema
-The first step is creating a schema which lays out what endpoints your API has and how to use them. You can use these schema's to navigate through your API. 
+The first step is creating a [schema](#schema-syntax) which lays out what endpoints your API has and how to use them. You can use these schema's to navigate through your API. 
 
 Basically every property in a `GET` response body named `$schema` is recognized as a schema so that you can send them along with your usual responses.
 ```json
